@@ -37,11 +37,15 @@ export class FileExplorer {
         return this._entries.splice(0, take)
     }
 
-    public setRootFolder(folder: RootFolder) {
+    private setEntries(entities: FolderEntry[] | null) {
+        this._entries = entities
+        this.entities.set(entities)
+    }
+
+    public setRootFolder(folder: RootFolder | null) {
         this._rootFolder = folder
         this.rootFolder.set(folder)
     }
-
 
     public getRootFolder() {
         if (this._rootFolder == null) {
@@ -67,9 +71,13 @@ export class FileExplorer {
         return entries
     }
 
-
     public async refetch() {
         this.entities.set(null)
         return this.getRemoteEntries()
+    }
+
+    public removeRemoteFolder() {
+        this.setRootFolder(null)
+        this.setEntries(null)
     }
 }
