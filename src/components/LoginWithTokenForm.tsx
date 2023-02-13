@@ -1,4 +1,4 @@
-import {DropboxAuthService} from "../services/DropboxAuthService";
+import {DropboxAuthService} from "../dropbox/DropboxAuthService";
 import {useState} from "react";
 import {useNavigate} from "react-router";
 

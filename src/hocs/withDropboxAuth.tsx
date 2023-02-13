@@ -1,15 +1,12 @@
 import {ComponentType} from "react"
-import {useDropboxAuth} from "../hooks/useDropboxAuth";
+import {RedirectTo} from "../components/RedirectTo";
+import {useDropboxContext} from "../context/DropboxContext";
 
 export const withDropboxAuth = <P extends object>(Component: ComponentType<P>) => (props: P) => {
-    const {isLoggedIn, authUrl} = useDropboxAuth()
+    const {isLoggedIn, isReady, accessToken} = useDropboxContext()
 
-    if (!isLoggedIn) return (
-        <div>
-            <a href={authUrl ?? "#"}>Log
-                in with dropbox</a>
-        </div>
-    )
+    if (!isReady) return null
+    if (!isLoggedIn || !accessToken) return <RedirectTo url="/login"/>
 
     return <Component {...props}/>
 }

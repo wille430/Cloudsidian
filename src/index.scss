@@ -1,3 +1,25 @@
+$primary: #393939;
+
+$border-radius: .375rem;
+$border-radius-sm: .225rem;
+$border-radius-lg: .275rem;
+
+@import "~bootstrap/scss/functions";
+@import "~bootstrap/scss/variables";
+@import "~bootstrap/scss/mixins";
+
+$spacers-extended: (
+        6: $spacer * 6
+);
+$spacers: map-merge($spacers, $spacers-extended);
+
+$colors-extended: (
+        "dropbox": #005ff7
+);
+$theme-colors: map-merge($theme-colors, $colors-extended);
+
+@import "~bootstrap/scss/bootstrap";
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -10,4 +32,19 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
   monospace;
+}
+
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+$widths: ("xs": 8rem, "sm": 24rem, "md": 32rem, "lg": 46rem);
+
+@each $size, $value in $widths {
+  .max-w-#{$size} {
+    max-width: $value;
+    width: 100%;
+  }
 }

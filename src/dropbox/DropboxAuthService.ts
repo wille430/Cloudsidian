@@ -1,5 +1,6 @@
 import {Dropbox, DropboxAuth} from "dropbox";
 import {DropboxConfig} from "./DropboxConfig";
+import {DropboxTokenResponse} from "./interfaces/DropboxTokenResponse";
 
 export interface IDropboxAuthService {
 
@@ -12,19 +13,11 @@ export interface IDropboxAuthService {
 
     getAuthorizationUrl(): Promise<string>
 
+    getAccessToken(): string | null
+
     isAuthenticated(): boolean
 
     signOut(): Promise<void>
-}
-
-export interface DropboxTokenResponse {
-    access_token: string,
-    expires_in: number,
-    token_type: string
-    scope?: string
-    account_id: string
-    uid: string,
-    expires: Date
 }
 
 export class DropboxAuthService implements IDropboxAuthService {
@@ -66,7 +59,7 @@ export class DropboxAuthService implements IDropboxAuthService {
         const res = await this.dropboxAuth.getAccessTokenFromCode(DropboxConfig.REDIRECT_URI, code)
         this.setAuthInfo({
             ...res.result,
-            expires: new Date(Date.now() + (res.result as DropboxTokenResponse).expires_in)
+            expires: new Date(Date.now() + (res.result as DropboxTokenResponse).expires_in * 1000)
         } as any)
     }
 
@@ -106,5 +99,9 @@ export class DropboxAuthService implements IDropboxAuthService {
 
     public async signOut(): Promise<void> {
         this.setAuthInfo(null)
+    }
+
+    public getAccessToken(): string | null {
+        return this.getAuthInfo()?.access_token as string | null
     }
 }

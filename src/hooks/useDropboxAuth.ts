@@ -1,14 +1,13 @@
-import {DropboxAuthService} from "../services/DropboxAuthService";
+import {DropboxAuthService} from "../dropbox/DropboxAuthService";
 import {useEffect, useMemo, useState} from "react";
-import {useLocation, useNavigate} from "react-router";
 
 export const useDropboxAuth = () => {
     const dropboxAuthSvc = useMemo(() => new DropboxAuthService(), [])
-    const navigate = useNavigate()
-    const location = useLocation()
 
     const [isLoggedIn, setIsLoggedIn] = useState(false)
+    const [isReady, setIsReady] = useState(false)
     const [authUrl, setAuthUrl] = useState<string | null>()
+    const [accessToken, setAccessToken] = useState<string | null>()
 
     useEffect(() => {
         dropboxAuthSvc.getAuthorizationUrl().then(setAuthUrl)
@@ -16,12 +15,14 @@ export const useDropboxAuth = () => {
 
     useEffect(() => {
         setIsLoggedIn(dropboxAuthSvc.isAuthenticated())
-    }, [dropboxAuthSvc, location])
+        setAccessToken(dropboxAuthSvc.getAccessToken())
+
+        setIsReady(true)
+    }, [dropboxAuthSvc]) // location
 
     const signOut = async () => {
         await dropboxAuthSvc.signOut()
-        navigate("/")
     }
 
-    return {isLoggedIn, authUrl, signOut}
+    return {isLoggedIn, isReady, authUrl, signOut, accessToken}
 }

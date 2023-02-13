@@ -1,7 +1,7 @@
 import {useEffect} from "react";
 import {useNavigate} from "react-router";
-import {DropboxAuthService} from "../../services/DropboxAuthService";
-import {DropboxConfig} from "../../services/DropboxConfig";
+import {DropboxAuthService} from "../../dropbox/DropboxAuthService";
+import {DropboxConfig} from "../../dropbox/DropboxConfig";
 
 export const DropboxSignIn = () => {
     const navigate = useNavigate()
