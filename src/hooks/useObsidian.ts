@@ -20,7 +20,8 @@ export const useObsidian = (dropboxAccessToken: string) => {
 
     useEffect(() => {
         importFolder()
-    }, [importFolder])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     return {Obsidian: obsidianService, importFolder, folders, rootFolder, fileExplorer}
 }
