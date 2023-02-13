@@ -3,15 +3,19 @@ import {useEffect, useMemo, useState} from "react";
 import {FileExplorer, FolderEntry, RootFolder} from "../services/FileExplorer";
 import {Database} from "../services/Database";
 import {AppConfig} from "../config/AppConfig";
+import {FileEditor} from "../services/FileEditor";
 
 export const useObsidian = (dropboxAccessToken: string) => {
     const [folders, setFolders] = useState<FolderEntry[] | null>(null)
     const [rootFolder, setRootFolder] = useState<RootFolder | null>(null)
     const [isLoading, setIsLoading] = useState(false)
 
+    const [editorHtml, setEditorHtml] = useState<string | null>(null)
+
     const fileExplorer = useMemo(() => {
         return new FileExplorer(new DropboxImportService(dropboxAccessToken), new Database(AppConfig.DATABASE_NAME))
     }, [dropboxAccessToken])
+    const fileEditor = new FileEditor(fileExplorer)
     const obsidianService = useMemo(() => new DropboxImportService(dropboxAccessToken), [dropboxAccessToken])
 
     const importFolder = () => {
@@ -41,6 +45,12 @@ export const useObsidian = (dropboxAccessToken: string) => {
         setIsLoading(false)
     }
 
+    const selectFile = async (file: FolderEntry) => {
+        if (file.isDir) return
+
+        setEditorHtml(await fileEditor.openFile(file))
+    }
+
     useEffect(() => {
         importFolder()
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -54,6 +64,8 @@ export const useObsidian = (dropboxAccessToken: string) => {
         removeRemoteFolder,
         reload,
         isLoading,
+        selectFile,
+        editorHtml,
         fileExplorer
     }
 }

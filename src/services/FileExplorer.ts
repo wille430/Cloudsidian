@@ -2,13 +2,16 @@ import {IImportService} from "../dropbox/DropboxImportService";
 import {Database} from "./Database";
 import {StorageItem} from "./StorageItem";
 
-export interface RootFolder extends FolderEntry {
+export interface RootFolder {
+    name: string
     remoteUrl: string
 }
 
 export interface FolderEntry {
-    name: string,
+    name: string
     isDir: boolean
+    remotePath?: string
+    content: string | null
 }
 
 export class FileExplorer {
@@ -33,8 +36,12 @@ export class FileExplorer {
         if (!this._entries) {
             this._entries = await this.getRemoteEntries()
         }
-        if (!take) take = 100
-        return this._entries.splice(0, take)
+
+        if (take) {
+            return this._entries.splice(0, take)
+        }
+
+        return this._entries
     }
 
     private setEntries(entities: FolderEntry[] | null) {
@@ -66,7 +73,7 @@ export class FileExplorer {
             throw new Error("Remote folder url is not set. Cannot fetch files.")
         }
 
-        const entries = await this.importService.import(rootFolder.remoteUrl)
+        const entries = await this.importService.fetchFolder(rootFolder.remoteUrl)
         this.entities.set(entries)
         return entries
     }
@@ -79,5 +86,27 @@ export class FileExplorer {
     public removeRemoteFolder() {
         this.setRootFolder(null)
         this.setEntries(null)
+    }
+
+    public async getFileContents(folderEntry: FolderEntry): Promise<string | null> {
+        if (folderEntry.isDir || folderEntry.remotePath == null) return null
+        if (folderEntry.content != null) return folderEntry.content
+
+        const newFile = await this.importService.fetchFile(folderEntry.remotePath)
+        await this.replaceOrInsertEntries(newFile)
+        folderEntry.content = newFile.content
+
+        return newFile.content
+    }
+
+    private async replaceOrInsertEntries(entity: FolderEntry) {
+        const entries = await this.getEntries()
+        const index = entries.findIndex(o => o.remotePath === entity.remotePath || o.name === entity.name)
+
+        if (index !== -1) {
+            entries[index] = entity
+        }
+
+        await this.setEntries(entries)
     }
 }

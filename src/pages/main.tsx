@@ -3,6 +3,7 @@ import {useObsidian} from "../hooks/useObsidian";
 import {DropboxChooser} from "../components/DropboxChooser";
 import {useDropboxContext} from "../context/DropboxContext";
 import {Link} from "react-router-dom";
+import ReactHtmlParser from "react-html-parser"
 
 const HomepageBase = () => {
 
@@ -13,6 +14,8 @@ const HomepageBase = () => {
         rootFolder,
         removeRemoteFolder,
         reload,
+        selectFile,
+        editorHtml,
         fileExplorer,
         isLoading
     } = useObsidian(accessToken!)
@@ -38,8 +41,7 @@ const HomepageBase = () => {
                         <DropboxChooser success={(res) => {
                             fileExplorer.setRootFolder({
                                 name: res[0].name,
-                                remoteUrl: res[0].link,
-                                isDir: true
+                                remoteUrl: res[0].link
                             })
                             importFolder()
                         }} multiselect={false} folderselect={true}/>
@@ -52,7 +54,8 @@ const HomepageBase = () => {
                 ) : (
                     <div className="list-group">
                         {folders?.map(o => (
-                            <Link to="#" className="list-group-item list-group-item-action">
+                            <Link key={o.name} to="#" onClick={() => selectFile(o)}
+                                  className="list-group-item list-group-item-action">
                                 {o.name}
                             </Link>
                         ))}
@@ -61,7 +64,7 @@ const HomepageBase = () => {
             </aside>
             <section className="flex-grow-1 bg-dark text-light">
                 <div className="container-md min-vh-100 p-2 py-4">
-                    <h3>hej</h3>
+                    {ReactHtmlParser(editorHtml as any)}
                 </div>
             </section>
         </main>
