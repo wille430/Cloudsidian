@@ -1,21 +1,32 @@
-import {FolderEntry, RootFolder} from "./FileExplorer";
 import {IImportService} from "../dropbox/DropboxImportService";
 import {StorageItem} from "./StorageItem";
+
+export interface RootFolder {
+    name: string
+    remoteUrl: string
+}
+
+export interface FileEntry {
+    name: string
+    isDir: boolean
+    remotePath?: string
+    content: string | null
+}
 
 interface IRemoteFolder {
     /**
      * Get a list of files/folders by path
      * @param relativePath - The path relative to the root folder
      */
-    getFiles(relativePath: string | null): Promise<FolderEntry[] | null>
+    getFiles(relativePath: string | null): Promise<FileEntry[] | null>
 
-    getStringContents(file: FolderEntry): Promise<string | null>
+    getStringContents(file: FileEntry): Promise<string | null>
 
     getLocalFileLink(filename: string): Promise<string | null>
 
-    getRemoteFilePath(file: FolderEntry): string | null
+    getRemoteFilePath(file: FileEntry): string | null
 
-    getFile(path: string): Promise<FolderEntry | null>
+    getFile(path: string): Promise<FileEntry | null>
 
     getRootFolder(): RootFolder | null
 
@@ -34,23 +45,23 @@ export class RemoteFolder implements IRemoteFolder {
     private static URL_STORE_KEY = "remote-folder-url"
 
     private readonly importService: IImportService
-    private readonly folderContents: StorageItem<FolderEntry[]>
-    private _folderContents: FolderEntry[] | null = null
+    private readonly folderContents: StorageItem<FileEntry[]>
+    private _folderContents: FileEntry[] | null = null
     private readonly rootFolder: StorageItem<RootFolder>
     private _rootFolder: RootFolder | null = null
 
     constructor(importService: IImportService) {
         this.importService = importService
-        this.folderContents = new StorageItem<FolderEntry[]>(sessionStorage, RemoteFolder.ENTRIES_STORE_KEY)
+        this.folderContents = new StorageItem<FileEntry[]>(sessionStorage, RemoteFolder.ENTRIES_STORE_KEY)
         this.rootFolder = new StorageItem<RootFolder>(localStorage, RemoteFolder.URL_STORE_KEY)
     }
 
-    public async getFile(path: string): Promise<FolderEntry | null> {
+    public async getFile(path: string): Promise<FileEntry | null> {
         const folderContents = await this.getFolderContents()
         return folderContents?.find(o => o.remotePath === path) ?? null
     }
 
-    public async getFiles(relativePath: string | null = null): Promise<FolderEntry[] | null> {
+    public async getFiles(relativePath: string | null = null): Promise<FileEntry[] | null> {
         if (relativePath != null) throw new Error("Getting nested files is not implemented yet")
         return this.getFolderContents()
     }
@@ -62,11 +73,11 @@ export class RemoteFolder implements IRemoteFolder {
         return `/?file=${this.getRemoteFilePath(file)}`
     }
 
-    public getRemoteFilePath(file: FolderEntry): string | null {
+    public getRemoteFilePath(file: FileEntry): string | null {
         return file.remotePath ?? null
     }
 
-    public async getStringContents(file: FolderEntry): Promise<string | null> {
+    public async getStringContents(file: FileEntry): Promise<string | null> {
         if (file.isDir || file.remotePath == null) return null
         if (file.content != null) return file.content
 
@@ -79,7 +90,7 @@ export class RemoteFolder implements IRemoteFolder {
         this.setFolderContents(await this.getRemoteFolderContents())
     }
 
-    private async getFolderContents(): Promise<FolderEntry[]> {
+    private async getFolderContents(): Promise<FileEntry[]> {
         if (this._folderContents == null) {
             this._folderContents = this.folderContents.get()
         }
@@ -92,7 +103,7 @@ export class RemoteFolder implements IRemoteFolder {
         return this._folderContents!
     }
 
-    private setFolderContents(content: FolderEntry[] | null): void {
+    private setFolderContents(content: FileEntry[] | null): void {
         this._folderContents = content
         this.folderContents.set(content)
     }

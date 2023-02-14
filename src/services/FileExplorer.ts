@@ -1,16 +1,4 @@
-import {RemoteFolder} from "./RemoteFolder";
-
-export interface RootFolder {
-    name: string
-    remoteUrl: string
-}
-
-export interface FolderEntry {
-    name: string
-    isDir: boolean
-    remotePath?: string
-    content: string | null
-}
+import {FileEntry, RemoteFolder} from "./RemoteFolder";
 
 export class FileExplorer {
     private readonly remoteFolder: RemoteFolder
@@ -19,7 +7,7 @@ export class FileExplorer {
         this.remoteFolder = remoteFolder
     }
 
-    public async listDirectory(): Promise<FolderEntry[] | null> {
+    public async listDirectory(): Promise<FileEntry[] | null> {
         return this.remoteFolder.getFiles()
     }
 

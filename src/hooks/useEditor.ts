@@ -33,10 +33,26 @@ export const useEditor = (ref: MutableRefObject<HTMLTextAreaElement | null>) => 
         if (changesArray.current.length > historySize) {
             changesArray.current = changesArray.current.slice(0, historySize)
         }
+
+        setHeight()
+    }
+
+    const clearHistory = () => {
+        changesArray.current = []
+    }
+
+    const setHeight = () => {
+        if (ref.current) {
+            // @ts-ignore
+            ref.current.style.height = 0
+            ref.current.style.height = ref.current.scrollHeight + 'px';
+        }
     }
 
     return {
         handleKeyDown,
-        handleChange
+        handleChange,
+        clearHistory,
+        setHeight
     }
 }

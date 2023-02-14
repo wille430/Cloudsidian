@@ -4,7 +4,7 @@ import {DropboxChooser} from "../components/DropboxChooser";
 import {useDropboxContext} from "../context/DropboxContext";
 import {Link} from "react-router-dom";
 import ReactHtmlParser from "react-html-parser"
-import React, {useRef} from "react";
+import React, {useEffect, useRef} from "react";
 import {useEditor} from "../hooks/useEditor";
 
 const HomepageBase = () => {
@@ -26,7 +26,11 @@ const HomepageBase = () => {
 
     const editorTextAreaRef = useRef<HTMLTextAreaElement | null>(null)
 
-    const {handleChange, handleKeyDown} = useEditor(editorTextAreaRef)
+    const {handleChange, handleKeyDown, clearHistory, setHeight} = useEditor(editorTextAreaRef)
+
+    useEffect(() => {
+        setHeight()
+    }, [setHeight])
 
     return (
         <main className="d-flex vh-100 overflow-hidden">
@@ -62,7 +66,10 @@ const HomepageBase = () => {
                 ) : (
                     <div className="list-group">
                         {folders?.map(o => (
-                            <Link key={o.name} to="#" onClick={() => selectFile(o)}
+                            <Link key={o.name} to="#" onClick={() => {
+                                selectFile(o).then()
+                                clearHistory()
+                            }}
                                   className="list-group-item list-group-item-action">
                                 {o.name}
                             </Link>

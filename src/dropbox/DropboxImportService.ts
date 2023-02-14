@@ -1,10 +1,10 @@
 import {Dropbox, files} from "dropbox";
-import {FolderEntry} from "../services/FileExplorer";
+import {FileEntry} from "../services/RemoteFolder";
 
 export interface IImportService {
-    fetchFolder(url: string): Promise<FolderEntry[]>
+    fetchFolder(url: string): Promise<FileEntry[]>
 
-    fetchFile(path: string): Promise<FolderEntry>
+    fetchFile(path: string): Promise<FileEntry>
 }
 
 export class DropboxImportService implements IImportService {
@@ -27,7 +27,7 @@ export class DropboxImportService implements IImportService {
         return res.result
     }
 
-    public async fetchFolder(url: string): Promise<FolderEntry[]> {
+    public async fetchFolder(url: string): Promise<FileEntry[]> {
         const {entries, has_more} = await this.getDirectoryContents(url)
         if (has_more) {
             console.warn("Not all folder contents were returned from", url)
@@ -41,7 +41,7 @@ export class DropboxImportService implements IImportService {
         }))
     }
 
-    public async fetchFile(path: string): Promise<FolderEntry> {
+    public async fetchFile(path: string): Promise<FileEntry> {
         const res = await this.dropbox.filesDownload({
             path: path
         })

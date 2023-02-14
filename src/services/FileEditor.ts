@@ -1,11 +1,10 @@
-import {FolderEntry} from "./FileExplorer";
 import {IMarkdownParser} from "./ObsidianParser";
-import {RemoteFolder} from "./RemoteFolder";
+import {FileEntry, RemoteFolder} from "./RemoteFolder";
 
 export class FileEditor {
     private readonly remoteFolder: RemoteFolder
     private readonly parser: IMarkdownParser
-    private currentFile: FolderEntry | null = null
+    private currentFile: FileEntry | null = null
 
     constructor(remoteFolder: RemoteFolder, parser: IMarkdownParser) {
         this.remoteFolder = remoteFolder
@@ -26,7 +25,7 @@ export class FileEditor {
         this.currentFile = file
     }
 
-    public async getCurrentFile(): Promise<FolderEntry | null> {
+    public async getCurrentFile(): Promise<FileEntry | null> {
         return this.currentFile
     }
 

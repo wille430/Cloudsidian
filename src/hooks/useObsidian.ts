@@ -1,13 +1,14 @@
 import {DropboxImportService} from "../dropbox/DropboxImportService";
 import {useEffect, useMemo, useState} from "react";
-import {FileExplorer, FolderEntry, RootFolder} from "../services/FileExplorer";
+import {FileExplorer} from "../services/FileExplorer";
+import {FileEntry, RootFolder} from "../services/RemoteFolder";
 import {FileEditor} from "../services/FileEditor";
 import {ObsidianParser} from "../services/ObsidianParser";
 import {useSearchParams} from "react-router-dom";
 import {RemoteFolder} from "../services/RemoteFolder";
 
 export const useObsidian = (accessToken: string) => {
-    const [folders, setFolders] = useState<FolderEntry[] | null>(null)
+    const [folders, setFolders] = useState<FileEntry[] | null>(null)
     const [rootFolder, setRootFolder] = useState<RootFolder | null>(null)
     const [isLoading, setIsLoading] = useState(false)
 
@@ -54,7 +55,7 @@ export const useObsidian = (accessToken: string) => {
         setIsLoading(false)
     }
 
-    const openFile = async (file: FolderEntry) => {
+    const openFile = async (file: FileEntry) => {
         if (file.isDir) return
         const link = await remoteFolder.getRemoteFilePath(file)
         setFileParam(link ?? null)
