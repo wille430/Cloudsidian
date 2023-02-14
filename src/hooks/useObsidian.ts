@@ -49,6 +49,7 @@ export const useObsidian = (accessToken: string) => {
         setIsLoading(true)
 
         await fileExplorer.refetch()
+        initEditor()
 
         setIsLoading(false)
     }
@@ -76,6 +77,13 @@ export const useObsidian = (accessToken: string) => {
         fileEditor.getHtml().then(setEditorHtml)
     }
 
+    const initEditor = () => {
+        fileEditor.getHtml().then(setEditorHtml)
+        fileEditor.getCurrentFile().then(file => {
+            setEditorMarkdown(file?.content ?? null)
+        })
+    }
+
     useEffect(() => {
         importFolder()
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -83,14 +91,7 @@ export const useObsidian = (accessToken: string) => {
 
     useEffect(() => {
         const filepath = searchParams.get("file")
-        fileEditor.setCurrentFile(filepath).then(() => {
-            fileEditor.getHtml().then(html => {
-                setEditorHtml(html)
-            })
-            fileEditor.getCurrentFile().then(file => {
-                setEditorMarkdown(file?.content ?? null)
-            })
-        })
+        fileEditor.setCurrentFile(filepath).then(initEditor)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchParams])
 

@@ -71,7 +71,7 @@ const HomepageBase = () => {
                 )}
             </aside>
             <section className="flex-grow-1 bg-dark text-light overflow-scroll">
-                <div className="container-md min-vh-100 row">
+                <div className="editor-container min-vh-100 row mx-auto gap-4">
                     <div className="p-2 py-4 col">
                         <textarea className="editor" spellCheck={false} value={editorMarkdown ?? ""}
                                   onInput={e => setEditorMarkdown(e.currentTarget.value)}
@@ -79,7 +79,7 @@ const HomepageBase = () => {
                                   onKeyDown={handleKeyDown}
                                   ref={editorTextAreaRef}/>
                     </div>
-                    <div className="p-2 py-4 col">
+                    <div className="p-2 py-4 col editor-preview">
                         {ReactHtmlParser(editorHtml as any)}
                     </div>
                 </div>

@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Mono&family=Inter:wght@300;400;500&display=swap');
+
 $primary: #393939;
 
 $border-radius: .375rem;
@@ -49,6 +51,18 @@ $widths: ("xs": 8rem, "sm": 24rem, "md": 32rem, "lg": 46rem);
   }
 }
 
+.editor-container {
+  width: 100%;
+  max-width: 1620px;
+  padding-left: $spacer * 2;
+  padding-right: $spacer * 2;
+  font-size: $font-size-base * 0.85;
+}
+
+.editor, .editor-preview {
+  font-family: "Fira Code", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
 .editor {
   @extend .bg-dark;
   @extend .border-0;
@@ -59,5 +73,38 @@ $widths: ("xs": 8rem, "sm": 24rem, "md": 32rem, "lg": 46rem);
   resize: none;
   width: 100%;
   line-height: $line-height-lg;
-  padding-left: $spacer * 1.75;
+}
+
+$editor-h1-color: #a79645;
+$editor-h2-color: #939bd6;
+$editor-h3-color: #ba6ea0;
+$editor-h4-color: #b78b60;
+$editor-h5-color: #859679;
+$editor-h6-color: #859679;
+
+.editor-preview {
+  h1 {
+    color: $editor-h1-color;
+    font-weight: bold;
+  }
+
+  h2 {
+    color: $editor-h2-color;
+  }
+
+  h3 {
+    color: $editor-h3-color;
+  }
+
+  h4 {
+    color: $editor-h4-color;
+  }
+
+  h5 {
+    color: $editor-h5-color;
+  }
+
+  h6 {
+    color: $editor-h6-color;
+  }
 }
