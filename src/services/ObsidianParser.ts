@@ -7,6 +7,7 @@ export interface IMarkdownParser {
 
 export class ObsidianParser implements IMarkdownParser {
     public static readonly ObsidianLink = new RegExp(/\[\[([^[]*)]]/g)
+    private static readonly FILE_EXT: string = ".md"
     private readonly remoteFolder: RemoteFolder
 
     constructor(remoteFolder: RemoteFolder) {
@@ -25,11 +26,8 @@ export class ObsidianParser implements IMarkdownParser {
             const match = next.value.at(0)
             const filename = next.value.at(1)
 
-            // TODO: support images in the future
-            const fileExt = ".md"
-
             if (filename && match) {
-                const link = await this.remoteFolder.getLocalFileLink(filename + fileExt)
+                const link = await this.remoteFolder.getLocalFileLink(filename + ObsidianParser.FILE_EXT)
                 if (link == null) {
                     md = md.replaceAll(match, `<a class="mx-1 text-muted" href="#">${filename}</a>`)
                 } else {
