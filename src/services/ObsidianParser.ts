@@ -6,7 +6,7 @@ export interface IMarkdownParser {
 }
 
 export class ObsidianParser implements IMarkdownParser {
-    public static readonly ObsidianLink = new RegExp(/\[\[(.*)]]/g)
+    public static readonly ObsidianLink = new RegExp(/\[\[([^[]*)]]/g)
     private readonly remoteFolder: RemoteFolder
 
     constructor(remoteFolder: RemoteFolder) {
