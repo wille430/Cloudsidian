@@ -13,21 +13,33 @@ export class FileEditor {
         this.parser = parser
     }
 
-    public async openFile(filePath: string): Promise<string | null> {
+    public async setCurrentFile(filePath: string | null): Promise<void> {
+        if (filePath == null) {
+            this.currentFile = null
+            return
+        }
         const file = await this.remoteFolder.getFile(filePath)
-        if (file == null || file.isDir) {
-            return null
+
+        if (file != null && file.content == null) {
+            await this.remoteFolder.getStringContents(file)
         }
 
-        const content = await this.remoteFolder.getStringContents(file)
+        this.currentFile = file
+    }
 
-        if (content) {
-            // file.content = content // not sure if this is necessary
-            this.currentFile = file
-            file.content = content
-            return marked.parse(await this.parser.parse(content))
-        }
+    public async getCurrentFile(): Promise<FolderEntry | null> {
+        return this.currentFile
+    }
 
-        return null
+    public async getHtml(): Promise<string | null> {
+        if (this.currentFile == null) return null
+
+        console.assert(this.currentFile.content)
+        return marked.parse(await this.parser.parse(this.currentFile.content!))
+    }
+
+    public setContent(content: string): void {
+        console.assert(this.currentFile)
+        this.currentFile!.content = content
     }
 }

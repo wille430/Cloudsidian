@@ -12,6 +12,7 @@ export const useObsidian = (accessToken: string) => {
     const [isLoading, setIsLoading] = useState(false)
 
     const [editorHtml, setEditorHtml] = useState<string | null>(null)
+    const [editorMarkdown, setEditorMarkdown] = useState<string | null>(null)
 
     const remoteFolder = useMemo(() => {
         return new RemoteFolder(new DropboxImportService(accessToken))
@@ -25,8 +26,11 @@ export const useObsidian = (accessToken: string) => {
 
     const importFolder = () => {
         setIsLoading(true)
-        fileExplorer.listDirectory().then(setFolders)
+        fileExplorer
+            .listDirectory()
+            .then(setFolders)
             .finally(() => setIsLoading(false))
+
         setRootFolder(fileExplorer.getRootFolder())
     }
 
@@ -66,6 +70,12 @@ export const useObsidian = (accessToken: string) => {
         })
     }
 
+    const onEditorChange = (text: string) => {
+        setEditorMarkdown(text)
+        fileEditor.setContent(text)
+        fileEditor.getHtml().then(setEditorHtml)
+    }
+
     useEffect(() => {
         importFolder()
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -73,13 +83,13 @@ export const useObsidian = (accessToken: string) => {
 
     useEffect(() => {
         const filepath = searchParams.get("file")
-        if (filepath == null) {
-            setEditorHtml(null)
-            return
-        }
-        fileEditor.openFile(filepath).then(html => {
-            if (html == null) setFileParam(null)
-            setEditorHtml(html)
+        fileEditor.setCurrentFile(filepath).then(() => {
+            fileEditor.getHtml().then(html => {
+                setEditorHtml(html)
+            })
+            fileEditor.getCurrentFile().then(file => {
+                setEditorMarkdown(file?.content ?? null)
+            })
         })
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchParams])
@@ -93,6 +103,8 @@ export const useObsidian = (accessToken: string) => {
         isLoading,
         selectFile: openFile,
         editorHtml,
+        editorMarkdown,
+        setEditorMarkdown: onEditorChange,
         fileExplorer,
         remoteFolder
     }

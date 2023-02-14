@@ -48,3 +48,16 @@ $widths: ("xs": 8rem, "sm": 24rem, "md": 32rem, "lg": 46rem);
     width: 100%;
   }
 }
+
+.editor {
+  @extend .bg-dark;
+  @extend .border-0;
+  @extend .text-light;
+  @extend .overflow-hidden;
+  outline: none;
+  height: 100%;
+  resize: none;
+  width: 100%;
+  line-height: $line-height-lg;
+  padding-left: $spacer * 1.75;
+}

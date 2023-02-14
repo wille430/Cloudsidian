@@ -4,6 +4,8 @@ import {DropboxChooser} from "../components/DropboxChooser";
 import {useDropboxContext} from "../context/DropboxContext";
 import {Link} from "react-router-dom";
 import ReactHtmlParser from "react-html-parser"
+import React, {useRef} from "react";
+import {useEditor} from "../hooks/useEditor";
 
 const HomepageBase = () => {
 
@@ -17,8 +19,14 @@ const HomepageBase = () => {
         selectFile,
         editorHtml,
         remoteFolder,
+        editorMarkdown,
+        setEditorMarkdown,
         isLoading
     } = useObsidian(accessToken!)
+
+    const editorTextAreaRef = useRef<HTMLTextAreaElement | null>(null)
+
+    const {handleChange, handleKeyDown} = useEditor(editorTextAreaRef)
 
     return (
         <main className="d-flex vh-100 overflow-hidden">
@@ -62,9 +70,18 @@ const HomepageBase = () => {
                     </div>
                 )}
             </aside>
-            <section className="flex-grow-1 bg-dark text-light">
-                <div className="container-md min-vh-100 p-2 py-4">
-                    {ReactHtmlParser(editorHtml as any)}
+            <section className="flex-grow-1 bg-dark text-light overflow-scroll">
+                <div className="container-md min-vh-100 row">
+                    <div className="p-2 py-4 col">
+                        <textarea className="editor" spellCheck={false} value={editorMarkdown ?? ""}
+                                  onInput={e => setEditorMarkdown(e.currentTarget.value)}
+                                  onChange={handleChange}
+                                  onKeyDown={handleKeyDown}
+                                  ref={editorTextAreaRef}/>
+                    </div>
+                    <div className="p-2 py-4 col">
+                        {ReactHtmlParser(editorHtml as any)}
+                    </div>
                 </div>
             </section>
         </main>
