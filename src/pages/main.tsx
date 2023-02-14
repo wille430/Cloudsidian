@@ -30,11 +30,12 @@ const HomepageBase = () => {
 
     const editorTextAreaRef = useRef<HTMLTextAreaElement | null>(null)
 
-    const {handleChange, handleKeyDown, clearHistory} = useEditor(editorTextAreaRef)
+    const {handleChange, handleKeyDown, clearHistory, setHeight} = useEditor(editorTextAreaRef)
 
     useEffect(() => {
+        setHeight()
         clearHistory()
-    }, [currentFile, clearHistory])
+    }, [clearHistory, currentFile, setHeight])
 
     return (
         <main className="d-flex vh-100 overflow-hidden">
