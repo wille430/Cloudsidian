@@ -1,5 +1,6 @@
-import {flow} from "lodash";
 import {RemoteFolder} from "./RemoteFolder";
+import {marked} from "marked";
+import {asyncPipe} from "../utils";
 
 export interface IMarkdownParser {
     parse(md: string): Promise<string>
@@ -14,9 +15,13 @@ export class ObsidianParser implements IMarkdownParser {
         this.remoteFolder = remoteFolder
     }
 
-    public parse = flow(
-        this.parseFileLinks
-    )
+    public async parse(md: string): Promise<string> {
+        // always bind this
+        return asyncPipe(
+            this.parseFileLinks.bind(this),
+            marked.parse
+        )(md)
+    }
 
     private async parseFileLinks(md: string) {
         const it = md.matchAll(ObsidianParser.ObsidianLink)

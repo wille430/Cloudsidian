@@ -1,5 +1,4 @@
 import {FolderEntry} from "./FileExplorer";
-import {marked} from "marked";
 import {IMarkdownParser} from "./ObsidianParser";
 import {RemoteFolder} from "./RemoteFolder";
 
@@ -35,7 +34,7 @@ export class FileEditor {
         if (this.currentFile == null) return null
 
         console.assert(this.currentFile.content)
-        return marked.parse(await this.parser.parse(this.currentFile.content!))
+        return this.parser.parse(this.currentFile.content!)
     }
 
     public setContent(content: string): void {
