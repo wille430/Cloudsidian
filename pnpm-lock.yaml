@@ -6,6 +6,7 @@ specifiers:
   '@babel/plugin-transform-react-jsx': ^7.20.13
   '@popperjs/core': ^2.11.6
   '@types/jest': ^27.5.2
+  '@types/lodash': ^4.14.191
   '@types/marked': ^4.0.8
   '@types/node': ^16.18.12
   '@types/node-fetch': ^2.6.2
@@ -17,6 +18,7 @@ specifiers:
   bootstrap: ^5.2.3
   dropbox: ^10.34.0
   idb: ^7.1.1
+  lodash: ^4.17.21
   marked: ^4.2.12
   node-polyfill-webpack-plugin: ^2.0.1
   react: ^18.2.0
@@ -32,6 +34,7 @@ specifiers:
 
 dependencies:
   '@popperjs/core': 2.11.6
+  '@types/lodash': 4.14.191
   '@types/marked': 4.0.8
   '@types/randomstring': 1.1.8
   '@types/react-html-parser': 2.0.2
@@ -39,6 +42,7 @@ dependencies:
   bootstrap: 5.2.3_@popperjs+core@2.11.6
   dropbox: 10.34.0_@types+node-fetch@2.6.2
   idb: 7.1.1
+  lodash: 4.17.21
   marked: 4.2.12
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
@@ -2155,6 +2159,10 @@ packages:
 
   /@types/json5/0.0.29:
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
+
+  /@types/lodash/4.14.191:
+    resolution: {integrity: sha512-BdZ5BCCvho3EIXw6wUCXHe7rS53AIDPLE+JzwgT+OsJk53oBfbSmZZ7CX4VaRoN78N+TJpFi9QPlfIVNmJYWxQ==}
+    dev: false
 
   /@types/marked/4.0.8:
     resolution: {integrity: sha512-HVNzMT5QlWCOdeuBsgXP8EZzKUf0+AXzN+sLmjvaB3ZlLqO+e4u0uXrdw9ub69wBKFs+c6/pA4r9sy6cCDvImw==}

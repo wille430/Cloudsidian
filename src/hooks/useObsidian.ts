@@ -4,6 +4,8 @@ import {FileExplorer, FolderEntry, RootFolder} from "../services/FileExplorer";
 import {Database} from "../services/Database";
 import {AppConfig} from "../config/AppConfig";
 import {FileEditor} from "../services/FileEditor";
+import {ObsidianParser} from "../services/ObsidianParser";
+import {useSearchParams} from "react-router-dom";
 
 export const useObsidian = (dropboxAccessToken: string) => {
     const [folders, setFolders] = useState<FolderEntry[] | null>(null)
@@ -15,13 +17,15 @@ export const useObsidian = (dropboxAccessToken: string) => {
     const fileExplorer = useMemo(() => {
         return new FileExplorer(new DropboxImportService(dropboxAccessToken), new Database(AppConfig.DATABASE_NAME))
     }, [dropboxAccessToken])
-    const fileEditor = new FileEditor(fileExplorer)
+    const fileEditor = new FileEditor(fileExplorer, new ObsidianParser(fileExplorer))
     const obsidianService = useMemo(() => new DropboxImportService(dropboxAccessToken), [dropboxAccessToken])
+
+    const [searchParams, setSearchParams] = useSearchParams()
 
     const importFolder = () => {
         setIsLoading(true)
-        fileExplorer.getEntries().then(res => {
-            setFolders(res)
+        fileExplorer.updateFolder().then(async () => {
+            setFolders(await fileExplorer.getEntries())
         }).finally(() => setIsLoading(false))
         setRootFolder(fileExplorer.getRootFolder())
     }
@@ -48,13 +52,38 @@ export const useObsidian = (dropboxAccessToken: string) => {
     const selectFile = async (file: FolderEntry) => {
         if (file.isDir) return
 
-        setEditorHtml(await fileEditor.openFile(file))
+        const link = await fileExplorer.getFilePath(file)
+        setFileParam(link ?? null)
+    }
+
+    const setFileParam = (link: string | null) => {
+        setSearchParams((prev) => {
+            if (link == null) {
+                prev.delete("file")
+            } else {
+                prev.set("file", link)
+            }
+            return prev
+        })
     }
 
     useEffect(() => {
         importFolder()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+
+    useEffect(() => {
+        const filepath = searchParams.get("file")
+        if (filepath == null) {
+            setEditorHtml(null)
+            return
+        }
+        fileEditor.openFile(filepath).then(html => {
+            if (html == null) setFileParam(null)
+            setEditorHtml(html)
+        })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams])
 
     return {
         Obsidian: obsidianService,

@@ -62,6 +62,10 @@ export class FileExplorer {
         return this._rootFolder
     }
 
+    public async updateFolder(): Promise<void> {
+        this.entities.set(await this.getRemoteEntries())
+    }
+
     private async getRemoteEntries(): Promise<FolderEntry[]> {
         const cached = this.entities.get()
         if (cached) {
@@ -108,5 +112,22 @@ export class FileExplorer {
         }
 
         await this.setEntries(entries)
+    }
+
+    public async getFileLink(fileName: string): Promise<string | null> {
+        const entries = await this.getEntries()
+        const entry = entries.find(o => !o.isDir && o.name === fileName)
+        if (entry == null) return null
+        return `/?file=${this.getFilePath(entry)}`
+    }
+
+    public getFilePath(file: FolderEntry) {
+        return file.remotePath
+    }
+
+    public async getFile(path: string): Promise<FolderEntry | null> {
+        const entries = await this.getEntries()
+        console.log("searching for", path)
+        return entries.find(o => !o.isDir && o.remotePath === path) ?? null
     }
 }

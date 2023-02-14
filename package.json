@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@popperjs/core": "^2.11.6",
+    "@types/lodash": "^4.14.191",
     "@types/marked": "^4.0.8",
     "@types/randomstring": "^1.1.8",
     "@types/react-html-parser": "^2.0.2",
@@ -11,6 +12,7 @@
     "bootstrap": "^5.2.3",
     "dropbox": "^10.34.0",
     "idb": "^7.1.1",
+    "lodash": "^4.17.21",
     "marked": "^4.2.12",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
