@@ -1,5 +1,5 @@
 import {flow} from "lodash";
-import {FileExplorer} from "./FileExplorer";
+import {RemoteFolder} from "./RemoteFolder";
 
 export interface IMarkdownParser {
     parse(md: string): Promise<string>
@@ -7,10 +7,10 @@ export interface IMarkdownParser {
 
 export class ObsidianParser implements IMarkdownParser {
     public static readonly ObsidianLink = new RegExp(/\[\[(.*)]]/g)
-    private readonly fileExplorer: FileExplorer
+    private readonly remoteFolder: RemoteFolder
 
-    constructor(fileExplorer: FileExplorer) {
-        this.fileExplorer = fileExplorer
+    constructor(remoteFolder: RemoteFolder) {
+        this.remoteFolder = remoteFolder
     }
 
     public parse = flow(
@@ -29,7 +29,7 @@ export class ObsidianParser implements IMarkdownParser {
             const fileExt = ".md"
 
             if (filename && match) {
-                const link = await this.fileExplorer.getFileLink(filename + fileExt)
+                const link = await this.remoteFolder.getLocalFileLink(filename + fileExt)
                 if (link == null) {
                     md = md.replaceAll(match, `<a class="mx-1 text-muted" href="#">${filename}</a>`)
                 } else {

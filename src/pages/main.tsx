@@ -16,7 +16,7 @@ const HomepageBase = () => {
         reload,
         selectFile,
         editorHtml,
-        fileExplorer,
+        remoteFolder,
         isLoading
     } = useObsidian(accessToken!)
 
@@ -39,7 +39,7 @@ const HomepageBase = () => {
                         <h4 className="card-title">{rootFolder?.name}</h4>
 
                         <DropboxChooser success={(res) => {
-                            fileExplorer.setRootFolder({
+                            remoteFolder.setRootFolder({
                                 name: res[0].name,
                                 remoteUrl: res[0].link
                             })

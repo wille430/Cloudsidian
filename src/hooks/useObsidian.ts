@@ -1,32 +1,32 @@
 import {DropboxImportService} from "../dropbox/DropboxImportService";
 import {useEffect, useMemo, useState} from "react";
 import {FileExplorer, FolderEntry, RootFolder} from "../services/FileExplorer";
-import {Database} from "../services/Database";
-import {AppConfig} from "../config/AppConfig";
 import {FileEditor} from "../services/FileEditor";
 import {ObsidianParser} from "../services/ObsidianParser";
 import {useSearchParams} from "react-router-dom";
+import {RemoteFolder} from "../services/RemoteFolder";
 
-export const useObsidian = (dropboxAccessToken: string) => {
+export const useObsidian = (accessToken: string) => {
     const [folders, setFolders] = useState<FolderEntry[] | null>(null)
     const [rootFolder, setRootFolder] = useState<RootFolder | null>(null)
     const [isLoading, setIsLoading] = useState(false)
 
     const [editorHtml, setEditorHtml] = useState<string | null>(null)
 
+    const remoteFolder = useMemo(() => {
+        return new RemoteFolder(new DropboxImportService(accessToken))
+    }, [accessToken])
     const fileExplorer = useMemo(() => {
-        return new FileExplorer(new DropboxImportService(dropboxAccessToken), new Database(AppConfig.DATABASE_NAME))
-    }, [dropboxAccessToken])
-    const fileEditor = new FileEditor(fileExplorer, new ObsidianParser(fileExplorer))
-    const obsidianService = useMemo(() => new DropboxImportService(dropboxAccessToken), [dropboxAccessToken])
+        return new FileExplorer(remoteFolder)
+    }, [remoteFolder])
+    const fileEditor = useMemo(() => new FileEditor(remoteFolder, new ObsidianParser(remoteFolder)), [remoteFolder])
 
     const [searchParams, setSearchParams] = useSearchParams()
 
     const importFolder = () => {
         setIsLoading(true)
-        fileExplorer.updateFolder().then(async () => {
-            setFolders(await fileExplorer.getEntries())
-        }).finally(() => setIsLoading(false))
+        fileExplorer.listDirectory().then(setFolders)
+            .finally(() => setIsLoading(false))
         setRootFolder(fileExplorer.getRootFolder())
     }
 
@@ -49,10 +49,9 @@ export const useObsidian = (dropboxAccessToken: string) => {
         setIsLoading(false)
     }
 
-    const selectFile = async (file: FolderEntry) => {
+    const openFile = async (file: FolderEntry) => {
         if (file.isDir) return
-
-        const link = await fileExplorer.getFilePath(file)
+        const link = await remoteFolder.getRemoteFilePath(file)
         setFileParam(link ?? null)
     }
 
@@ -86,15 +85,15 @@ export const useObsidian = (dropboxAccessToken: string) => {
     }, [searchParams])
 
     return {
-        Obsidian: obsidianService,
         importFolder,
         folders,
         rootFolder,
         removeRemoteFolder,
         reload,
         isLoading,
-        selectFile,
+        selectFile: openFile,
         editorHtml,
-        fileExplorer
+        fileExplorer,
+        remoteFolder
     }
 }
