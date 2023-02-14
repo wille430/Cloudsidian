@@ -2,7 +2,7 @@ import {DropboxImportService} from "../dropbox/DropboxImportService";
 import {useEffect, useMemo, useState} from "react";
 import {FileExplorer} from "../services/FileExplorer";
 import {FileEntry, RootFolder} from "../services/RemoteFolder";
-import {FileEditor} from "../services/FileEditor";
+import {CurrentFile, FileEditor} from "../services/FileEditor";
 import {ObsidianParser} from "../services/ObsidianParser";
 import {useSearchParams} from "react-router-dom";
 import {RemoteFolder} from "../services/RemoteFolder";
@@ -11,6 +11,10 @@ export const useObsidian = (accessToken: string) => {
     const [folders, setFolders] = useState<FileEntry[] | null>(null)
     const [rootFolder, setRootFolder] = useState<RootFolder | null>(null)
     const [isLoading, setIsLoading] = useState(false)
+
+    const [isSavingCurrent, setIsSavingCurrent] = useState(false)
+    const [isModified, setIsModified] = useState(false)
+    const [currentFile, setCurrentFile] = useState<CurrentFile | null>(null)
 
     const [editorHtml, setEditorHtml] = useState<string | null>(null)
     const [editorMarkdown, setEditorMarkdown] = useState<string | null>(null)
@@ -27,12 +31,18 @@ export const useObsidian = (accessToken: string) => {
 
     const importFolder = () => {
         setIsLoading(true)
+
+        const rootFolder = fileExplorer.getRootFolder()
+        setRootFolder(rootFolder)
+        if (rootFolder == null) {
+            setIsLoading(false)
+            return
+        }
+
         fileExplorer
             .listDirectory()
             .then(setFolders)
             .finally(() => setIsLoading(false))
-
-        setRootFolder(fileExplorer.getRootFolder())
     }
 
     const removeRemoteFolder = async () => {
@@ -55,10 +65,22 @@ export const useObsidian = (accessToken: string) => {
         setIsLoading(false)
     }
 
-    const openFile = async (file: FileEntry) => {
-        if (file.isDir) return
+    /**
+     * Open a file and returns whether a new file was opened
+     * @param file - {@link FileEntry}
+     */
+    const selectFile = async (file: FileEntry): Promise<boolean> => {
+        const currentFile = await fileEditor.getCurrentFile()
+        if (file.isDir || (currentFile != null && currentFile.remotePath === file.remotePath)) return false
+
+        if (isModified && !window.confirm("Are you sure you want to discard your changes?")) {
+            return false
+        }
+
         const link = await remoteFolder.getRemoteFilePath(file)
         setFileParam(link ?? null)
+
+        return true
     }
 
     const setFileParam = (link: string | null) => {
@@ -76,13 +98,28 @@ export const useObsidian = (accessToken: string) => {
         setEditorMarkdown(text)
         fileEditor.setContent(text)
         fileEditor.getHtml().then(setEditorHtml)
+        fileEditor.getCurrentFile().then(file => {
+            setIsModified(text !== file?.originalContent)
+        })
     }
 
     const initEditor = () => {
         fileEditor.getHtml().then(setEditorHtml)
         fileEditor.getCurrentFile().then(file => {
+            setCurrentFile(file)
             setEditorMarkdown(file?.content ?? null)
         })
+    }
+
+    const saveCurrentFile = async () => {
+        if (isSavingCurrent) return
+        setIsSavingCurrent(true)
+        await fileEditor
+            .save()
+            .finally(() => {
+                setIsSavingCurrent(false)
+            })
+        setIsModified(false)
     }
 
     useEffect(() => {
@@ -92,22 +129,31 @@ export const useObsidian = (accessToken: string) => {
 
     useEffect(() => {
         const filepath = searchParams.get("file")
-        fileEditor.setCurrentFile(filepath).then(initEditor)
+        fileEditor
+            .setCurrentFile(filepath)
+            .then(initEditor)
+            .catch(() => {
+                setFileParam(null)
+            })
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchParams])
 
     return {
-        importFolder,
         folders,
         rootFolder,
-        removeRemoteFolder,
-        reload,
         isLoading,
-        selectFile: openFile,
         editorHtml,
         editorMarkdown,
-        setEditorMarkdown: onEditorChange,
         fileExplorer,
-        remoteFolder
+        remoteFolder,
+        isModified,
+        isSavingCurrent,
+        currentFile,
+        removeRemoteFolder,
+        reload,
+        selectFile,
+        setEditorMarkdown: onEditorChange,
+        importFolder,
+        saveCurrentFile
     }
 }

@@ -1,10 +1,15 @@
 import {IMarkdownParser} from "./ObsidianParser";
 import {FileEntry, RemoteFolder} from "./RemoteFolder";
 
+export interface CurrentFile extends FileEntry {
+    modified: boolean
+    originalContent: string | null
+}
+
 export class FileEditor {
     private readonly remoteFolder: RemoteFolder
     private readonly parser: IMarkdownParser
-    private currentFile: FileEntry | null = null
+    private currentFile: CurrentFile | null = null
 
     constructor(remoteFolder: RemoteFolder, parser: IMarkdownParser) {
         this.remoteFolder = remoteFolder
@@ -22,10 +27,14 @@ export class FileEditor {
             await this.remoteFolder.getStringContents(file)
         }
 
-        this.currentFile = file
+        this.currentFile = {
+            ...file!,
+            modified: false,
+            originalContent: file?.content ?? null
+        }
     }
 
-    public async getCurrentFile(): Promise<FileEntry | null> {
+    public async getCurrentFile(): Promise<CurrentFile | null> {
         return this.currentFile
     }
 
@@ -38,6 +47,12 @@ export class FileEditor {
 
     public setContent(content: string): void {
         console.assert(this.currentFile)
+        this.currentFile!.modified = this.currentFile?.originalContent !== this.currentFile?.content
         this.currentFile!.content = content
+    }
+
+    public async save(): Promise<boolean> {
+        if (this.currentFile == null) return false
+        return this.remoteFolder.saveFile(this.currentFile)
     }
 }

@@ -1,4 +1,4 @@
-import React, {ChangeEvent, MutableRefObject, useRef} from "react"
+import React, {ChangeEvent, MutableRefObject, useCallback, useEffect, useRef} from "react"
 
 export const useEditor = (ref: MutableRefObject<HTMLTextAreaElement | null>) => {
 
@@ -41,13 +41,17 @@ export const useEditor = (ref: MutableRefObject<HTMLTextAreaElement | null>) => 
         changesArray.current = []
     }
 
-    const setHeight = () => {
+    const setHeight = useCallback(() => {
         if (ref.current) {
             // @ts-ignore
             ref.current.style.height = 0
             ref.current.style.height = ref.current.scrollHeight + 'px';
         }
-    }
+    }, [ref])
+
+    useEffect(() => {
+        setHeight()
+    }, [setHeight])
 
     return {
         handleKeyDown,

@@ -107,3 +107,7 @@ $editor-h6-color: #859679;
     color: $editor-h6-color;
   }
 }
+
+.btn > .spinner-border {
+  margin-right: $spacer * 0.5;
+}

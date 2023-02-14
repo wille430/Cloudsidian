@@ -32,6 +32,8 @@ interface IRemoteFolder {
 
     setRootFolder(folder: RootFolder | null): void
 
+    saveFile(file: FileEntry): Promise<boolean>
+
     /**
      * Writes current changes to remote and fetches remote folder contents.
      * Conflicts will be solved by making a copy of the original file.
@@ -122,10 +124,26 @@ export class RemoteFolder implements IRemoteFolder {
     }
 
     public setRootFolder(folder: RootFolder | null): void {
-        if (folder == null) {
-            this.setFolderContents(null)
-        }
+        this.setFolderContents(null)
         this._rootFolder = folder
         this.rootFolder.set(folder)
+    }
+
+    public async saveFile(file: FileEntry): Promise<boolean> {
+        try {
+            await this.importService.saveFile(file)
+            let files = await this.getFolderContents()
+            files = files.map(o => {
+                if (o.remotePath === file.remotePath) {
+                    o.content = file.content
+                }
+                return o
+            })
+            await this.setFolderContents(files)
+            return true
+        } catch (e) {
+            console.error(e)
+            return false
+        }
     }
 }

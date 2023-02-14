@@ -2,10 +2,10 @@ import {withDropboxAuth} from "../hocs/withDropboxAuth";
 import {useObsidian} from "../hooks/useObsidian";
 import {DropboxChooser} from "../components/DropboxChooser";
 import {useDropboxContext} from "../context/DropboxContext";
-import {Link} from "react-router-dom";
 import ReactHtmlParser from "react-html-parser"
 import React, {useEffect, useRef} from "react";
 import {useEditor} from "../hooks/useEditor";
+import clsx from "clsx";
 
 const HomepageBase = () => {
 
@@ -16,21 +16,25 @@ const HomepageBase = () => {
         rootFolder,
         removeRemoteFolder,
         reload,
-        selectFile,
         editorHtml,
         remoteFolder,
         editorMarkdown,
         setEditorMarkdown,
-        isLoading
+        isLoading,
+        isSavingCurrent,
+        isModified,
+        currentFile,
+        selectFile,
+        saveCurrentFile
     } = useObsidian(accessToken!)
 
     const editorTextAreaRef = useRef<HTMLTextAreaElement | null>(null)
 
-    const {handleChange, handleKeyDown, clearHistory, setHeight} = useEditor(editorTextAreaRef)
+    const {handleChange, handleKeyDown, clearHistory} = useEditor(editorTextAreaRef)
 
     useEffect(() => {
-        setHeight()
-    }, [setHeight])
+        clearHistory()
+    }, [currentFile, clearHistory])
 
     return (
         <main className="d-flex vh-100 overflow-hidden">
@@ -66,18 +70,44 @@ const HomepageBase = () => {
                 ) : (
                     <div className="list-group">
                         {folders?.map(o => (
-                            <Link key={o.name} to="#" onClick={() => {
-                                selectFile(o).then()
-                                clearHistory()
-                            }}
-                                  className="list-group-item list-group-item-action">
+                            <button key={o.name}
+                                    onClick={() => {
+                                        selectFile(o).then()
+                                    }}
+                                    className="list-group-item list-group-item-action"
+                            >
                                 {o.name}
-                            </Link>
+                            </button>
                         ))}
                     </div>
                 )}
             </aside>
             <section className="flex-grow-1 bg-dark text-light overflow-scroll">
+                <header className="row px-2 py-1">
+                    <div className="col-1"/>
+
+                    <div className="col-1 flex-grow-1 text-center">
+                        <span>{currentFile?.name}</span>
+                    </div>
+
+                    <div className="col-auto d-flex flex-row-reverse">
+                        {isModified ? (
+                            <button className="btn btn-sm btn-dark" type="button" onClick={saveCurrentFile}
+                                    disabled={isSavingCurrent}>
+                            <span
+                                className={clsx("spinner-border spinner-border-sm", !isSavingCurrent && "visually-hidden")}
+                                role="status"
+                            />
+                                <span>Save</span>
+                            </button>
+                        ) : (
+                            <button className="btn btn-sm btn-dark" type="button"
+                                    disabled={true}>
+                                <span>Up to date</span>
+                            </button>
+                        )}
+                    </div>
+                </header>
                 <div className="editor-container min-vh-100 row mx-auto gap-4">
                     <div className="p-2 py-4 col">
                         <textarea className="editor" spellCheck={false} value={editorMarkdown ?? ""}
