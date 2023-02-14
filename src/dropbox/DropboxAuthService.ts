@@ -1,6 +1,7 @@
 import {Dropbox, DropboxAuth} from "dropbox";
 import {DropboxConfig} from "./DropboxConfig";
 import {DropboxTokenResponse} from "./interfaces/DropboxTokenResponse";
+import {StorageItem} from "../services/StorageItem";
 
 export interface IDropboxAuthService {
 
@@ -27,6 +28,7 @@ export class DropboxAuthService implements IDropboxAuthService {
     private readonly CODE_VERIFIER_KEY = "code_verifier";
     private readonly AUTH_INFO_KEY = "auth_info";
     public static readonly ACCESS_TOKEN: string = "access_token";
+    private readonly codeVerifier = new StorageItem<string>(sessionStorage, this.CODE_VERIFIER_KEY)
 
     constructor() {
         this.dropbox = new Dropbox();
@@ -45,17 +47,13 @@ export class DropboxAuthService implements IDropboxAuthService {
             true
         ) as string;
 
-        sessionStorage.setItem(this.CODE_VERIFIER_KEY, this.dropboxAuth.getCodeVerifier())
+        this.setCodeVerifier(this.dropboxAuth.getCodeVerifier())
 
         return url;
     }
 
     public async getOauth2Token(code: string): Promise<void> {
-
-        if (this.dropboxAuth.getCodeVerifier() == null) {
-            this.dropboxAuth.setCodeVerifier(this.getCodeVerifier())
-        }
-
+        this.dropboxAuth.setCodeVerifier(this.getCodeVerifier())
         const res = await this.dropboxAuth.getAccessTokenFromCode(DropboxConfig.REDIRECT_URI, code)
         this.setAuthInfo({
             ...res.result,
@@ -81,15 +79,20 @@ export class DropboxAuthService implements IDropboxAuthService {
         sessionStorage.setItem(this.AUTH_INFO_KEY, JSON.stringify(obj));
     }
 
-
     private getCodeVerifier() {
-        const codeVerifier = sessionStorage.getItem(this.CODE_VERIFIER_KEY)
+        const codeVerifier = this.codeVerifier.get()
 
         if (codeVerifier == null) {
             throw new Error(`Item with key ${this.CODE_VERIFIER_KEY} is missing from session storage. This is probably due to an incomplete sign in flow.`)
         }
 
         return codeVerifier;
+    }
+
+    private setCodeVerifier(codeVerifier: string | null) {
+        this.codeVerifier.set(codeVerifier)
+        console.log(this.codeVerifier.get())
+        console.assert(this.codeVerifier.get() === codeVerifier)
     }
 
     public isAuthenticated(): boolean {

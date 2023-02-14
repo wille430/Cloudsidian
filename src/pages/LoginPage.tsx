@@ -1,6 +1,7 @@
 import {useDropboxContext} from "../context/DropboxContext";
+import {withDropboxAuth} from "../hocs/withDropboxAuth";
 
-export const LoginPage = () => {
+export const LoginPageBase = () => {
     const {authUrl} = useDropboxContext()
 
     return (
@@ -19,3 +20,5 @@ export const LoginPage = () => {
         </main>
     )
 }
+
+export const LoginPage = withDropboxAuth(LoginPageBase, false)

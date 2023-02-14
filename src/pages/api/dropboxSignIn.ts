@@ -1,26 +1,26 @@
-import {useEffect} from "react";
+import {useEffect, useRef} from "react";
 import {useNavigate} from "react-router";
-import {DropboxAuthService} from "../../dropbox/DropboxAuthService";
-import {DropboxConfig} from "../../dropbox/DropboxConfig";
+import {useDropboxContext} from "../../context/DropboxContext";
 
 export const DropboxSignIn = () => {
     const navigate = useNavigate()
 
+    const {getOauthTokenFromCode} = useDropboxContext()
+    const isFirstRender = useRef(true)
+
     useEffect(() => {
-        const code = new URL(window.location.toString()).searchParams.get(DropboxConfig.CODE_KEY)
-        if (code == null) return navigate("?error=true")
+        if (!isFirstRender.current) return
+        isFirstRender.current = false
 
-        const dropboxService = new DropboxAuthService()
-
-        dropboxService
-            .getOauth2Token(code)
-            .then(() => {
+        getOauthTokenFromCode().then(success => {
+            if (success) {
                 navigate("/")
-            })
-            .catch((e) => {
-                console.log(e)
-            })
-    }, [navigate])
+            } else {
+                navigate("/login")
+            }
+        })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     return null
 }
