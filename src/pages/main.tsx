@@ -1,49 +1,49 @@
-import {withDropboxAuth} from "../hocs/withDropboxAuth";
-import {useObsidian} from "../hooks/useObsidian";
+import {useFileExplorer} from "../hooks/useFileExplorer";
 import {DropboxChooser} from "../components/DropboxChooser";
 import {useDropboxContext} from "../context/DropboxContext";
 import ReactHtmlParser from "react-html-parser"
-import React, {useEffect, useRef} from "react";
+import React, {useRef} from "react";
 import {useEditor} from "../hooks/useEditor";
 import clsx from "clsx";
+import {withDropboxRemote} from "../hocs/withDropboxRemote";
 
 const HomepageBase = () => {
 
-    const {accessToken, signOut} = useDropboxContext()
+    const {signOut} = useDropboxContext()
     const {
         importFolder,
         folders,
         rootFolder,
         removeRemoteFolder,
         reload,
-        editorHtml,
-        remoteFolder,
-        editorMarkdown,
-        setEditorMarkdown,
         isLoading,
-        isSavingCurrent,
-        isModified,
-        currentFile,
-        selectFile,
-        saveCurrentFile
-    } = useObsidian(accessToken!)
+        selectFile
+    } = useFileExplorer()
 
     const editorTextAreaRef = useRef<HTMLTextAreaElement | null>(null)
 
-    const {handleChange, handleKeyDown, clearHistory, setHeight} = useEditor(editorTextAreaRef)
-
-    useEffect(() => {
-        setHeight()
-        clearHistory()
-    }, [clearHistory, currentFile, setHeight])
+    const {
+        handleChange,
+        handleKeyDown,
+        onEditorChange,
+        saveCurrentChanges,
+        isSaving,
+        isModified,
+        editorMarkdown,
+        editorHtml,
+        currentFile,
+        isLoading: isEditorLoading
+    } = useEditor(editorTextAreaRef)
 
     return (
         <main className="d-flex vh-100 overflow-hidden">
             <aside className="max-w-sm overflow-scroll card">
                 <div className="sticky-top card-header bg-light">
-                    <div className="btn-group btn-group-sm">
+                    <div
+                        className={clsx("btn-group btn-group-sm d-flex mb-4", rootFolder == null && "visually-hidden")}
+                    >
                         <button className="btn btn-primary" onClick={signOut}>Sign Out</button>
-                        <button className="btn btn-outline-secondary" onClick={reload}>
+                        <button className="btn btn-outline-secondary" onClick={reload} disabled={isLoading}>
                             <i className="fa-solid fa-rotate-right"></i>
                         </button>
                         <button className="btn btn-outline-danger"
@@ -56,18 +56,19 @@ const HomepageBase = () => {
                         <h4 className="card-title">{rootFolder?.name}</h4>
 
                         <DropboxChooser success={(res) => {
-                            remoteFolder.setRootFolder({
+                            importFolder({
                                 name: res[0].name,
                                 remoteUrl: res[0].link
                             })
-                            importFolder()
                         }} multiselect={false} folderselect={true}/>
                     </div>
 
                 </div>
 
                 {isLoading ? (
-                    <div>Loading...</div>
+                    <div className="h-100 center">
+                        <div className="spinner-border"/>
+                    </div>
                 ) : (
                     <div className="list-group">
                         {folders?.map(o => (
@@ -84,19 +85,19 @@ const HomepageBase = () => {
                 )}
             </aside>
             <section className="flex-grow-1 bg-dark text-light overflow-scroll">
-                <header className="row px-2 py-1">
+                <header className="row px-2 py-1 bg-black bg-opacity-10">
                     <div className="col-1"/>
 
-                    <div className="col-1 flex-grow-1 text-center">
-                        <span>{currentFile?.name}</span>
+                    <div className="col-1 flex-grow-1 center">
+                        <span className="mb-1 fs-details">{currentFile?.name}</span>
                     </div>
 
-                    <div className="col-auto d-flex flex-row-reverse">
+                    <div className={clsx("col-auto d-flex flex-row-reverse", currentFile == null && "opacity-0")}>
                         {isModified ? (
-                            <button className="btn btn-sm btn-dark" type="button" onClick={saveCurrentFile}
-                                    disabled={isSavingCurrent}>
+                            <button className="btn btn-sm btn-dark" type="button" onClick={saveCurrentChanges}
+                                    disabled={isSaving || currentFile == null}>
                             <span
-                                className={clsx("spinner-border spinner-border-sm", !isSavingCurrent && "visually-hidden")}
+                                className={clsx("spinner-border spinner-border-sm", !isSaving && "visually-hidden")}
                                 role="status"
                             />
                                 <span>Save</span>
@@ -109,21 +110,29 @@ const HomepageBase = () => {
                         )}
                     </div>
                 </header>
-                <div className="editor-container min-vh-100 row mx-auto gap-4">
-                    <div className="p-2 py-4 col">
+                <div className="editor-container row mx-auto gap-4">
+                    {isEditorLoading ? (
+                        <div className="center">
+                            <div className="spinner-border"/>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="p-2 py-4 col">
                         <textarea className="editor" spellCheck={false} value={editorMarkdown ?? ""}
-                                  onInput={e => setEditorMarkdown(e.currentTarget.value)}
+                                  onInput={e => onEditorChange(e.currentTarget.value)}
                                   onChange={handleChange}
                                   onKeyDown={handleKeyDown}
                                   ref={editorTextAreaRef}/>
-                    </div>
-                    <div className="p-2 py-4 col editor-preview">
-                        {ReactHtmlParser(editorHtml as any)}
-                    </div>
+                            </div>
+                            <div className="p-2 py-4 col editor-preview">
+                                {ReactHtmlParser(editorHtml as any)}
+                            </div>
+                        </>
+                    )}
                 </div>
             </section>
         </main>
     )
 }
 
-export const Homepage = withDropboxAuth(HomepageBase)
+export const Homepage = withDropboxRemote(HomepageBase)

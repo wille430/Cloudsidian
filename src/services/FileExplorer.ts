@@ -1,4 +1,4 @@
-import {FileEntry, RemoteFolder} from "./RemoteFolder";
+import {FileEntry, RemoteFolder, RootFolder} from "./RemoteFolder";
 
 export class FileExplorer {
     private readonly remoteFolder: RemoteFolder
@@ -19,7 +19,11 @@ export class FileExplorer {
         return this.remoteFolder.sync()
     }
 
-    public removeRemoteFolder() {
-        this.remoteFolder.setRootFolder(null)
+    public setRemoteFolder(folder: RootFolder | null) {
+        return this.remoteFolder.setRootFolder(folder)
+    }
+
+    public async getRemoteFilePath(file: FileEntry) {
+        return this.remoteFolder.getRemoteFilePath(file)
     }
 }

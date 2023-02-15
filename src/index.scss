@@ -20,6 +20,11 @@ $colors-extended: (
 );
 $theme-colors: map-merge($theme-colors, $colors-extended);
 
+$font-sizes-extended : (
+        "details": $font-size-base * 0.9
+);
+$font-sizes: map-merge($font-sizes, $font-sizes-extended);
+
 @import "~bootstrap/scss/bootstrap";
 
 body {
@@ -110,4 +115,8 @@ $editor-h6-color: #859679;
 
 .btn > .spinner-border {
   margin-right: $spacer * 0.5;
+}
+
+.row {
+  margin-right: 0 !important;
 }

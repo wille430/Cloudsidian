@@ -48,12 +48,5 @@ export const useDropboxAuth = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
-    useEffect(() => {
-        console.log({
-            isLoggedIn,
-            isReady
-        })
-    }, [isLoggedIn, isReady])
-
     return {isLoggedIn, isReady, authUrl, signOut, accessToken, getOauthTokenFromCode}
 }

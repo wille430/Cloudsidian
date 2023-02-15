@@ -91,7 +91,6 @@ export class DropboxAuthService implements IDropboxAuthService {
 
     private setCodeVerifier(codeVerifier: string | null) {
         this.codeVerifier.set(codeVerifier)
-        console.log(this.codeVerifier.get())
         console.assert(this.codeVerifier.get() === codeVerifier)
     }
 
