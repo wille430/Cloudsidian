@@ -34,7 +34,7 @@ export class FileEditor {
         }
     }
 
-    public async getCurrentFile(): Promise<CurrentFile | null> {
+    public getCurrentFile(): CurrentFile | null {
         return this.currentFile
     }
 
@@ -53,6 +53,12 @@ export class FileEditor {
 
     public async save(): Promise<boolean> {
         if (this.currentFile == null) return false
-        return this.remoteFolder.saveFile(this.currentFile)
+        const success = await this.remoteFolder.saveFile(this.currentFile)
+        if (success) {
+            this.currentFile.modified = false
+            this.currentFile.originalContent = this.currentFile.content
+        }
+
+        return success
     }
 }

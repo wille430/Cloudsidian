@@ -9,28 +9,28 @@ export const useFileExplorer = () => {
     const [isLoading, setIsLoading] = useState(false)
 
     const {fileEditor, fileExplorer} = useObsidianContext()
-
     const {setFileParam} = useFileParam()
 
     const importFolder = (folder: RootFolder) => {
         setRootFolder(folder)
         fileExplorer.setRemoteFolder(folder)
-        initFolder()
+        updateFolderView().then()
     }
 
-    const initFolder = () => {
+    const updateFolderView = async () => {
         setIsLoading(true)
 
         const rootFolder = fileExplorer.getRootFolder()
         setRootFolder(rootFolder)
         if (rootFolder == null) {
+            setFolders(null)
             setIsLoading(false)
             return
         }
 
-        fileExplorer
+        await fileExplorer
             .listDirectory()
-            .then(setFolders)
+            .then(res => setFolders([...res]))
             .finally(() => setIsLoading(false))
     }
 
@@ -48,8 +48,28 @@ export const useFileExplorer = () => {
 
     const reload = async () => {
         setIsLoading(true)
-        await fileExplorer.refetch()
-        setIsLoading(false)
+        try {
+            await fileExplorer.refetch()
+        } catch (e) {
+            console.log(e)
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    const openFolder = async (folder: FileEntry) => {
+        folder.isLoading = true
+        folder.showChildren = !folder.showChildren
+
+        if (folder.showChildren) {
+            await fileExplorer.listDirectory(folder)
+            await fileExplorer
+                .listDirectory()
+                .then(res => setFolders([...res]))
+        }
+
+        folder.isLoading = false
+        await updateFolderView()
     }
 
     /**
@@ -58,7 +78,12 @@ export const useFileExplorer = () => {
      */
     const selectFile = async (file: FileEntry): Promise<boolean> => {
         const currentFile = await fileEditor.getCurrentFile()
-        if (file.isDir || (currentFile != null && currentFile.remotePath === file.remotePath)) return false
+        if (file.isDir) {
+            return openFolder(file)
+                .then(() => true)
+                .catch(() => false)
+        }
+        if (currentFile != null && currentFile.remotePath === file.remotePath) return false
 
         if (currentFile?.modified && !window.confirm("Are you sure you want to discard your changes?")) {
             return false
@@ -71,7 +96,7 @@ export const useFileExplorer = () => {
     }
 
     useEffect(() => {
-        initFolder()
+        updateFolderView()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
@@ -83,6 +108,7 @@ export const useFileExplorer = () => {
         removeRemoteFolder,
         reload,
         selectFile,
-        importFolder
+        importFolder,
+        openFolder
     }
 }

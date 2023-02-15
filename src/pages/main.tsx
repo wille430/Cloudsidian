@@ -6,6 +6,7 @@ import React, {useRef} from "react";
 import {useEditor} from "../hooks/useEditor";
 import clsx from "clsx";
 import {withDropboxRemote} from "../hocs/withDropboxRemote";
+import {DisplayFolders} from "../components/DisplayFolders";
 
 const HomepageBase = () => {
 
@@ -71,16 +72,7 @@ const HomepageBase = () => {
                     </div>
                 ) : (
                     <div className="list-group">
-                        {folders?.map(o => (
-                            <button key={o.name}
-                                    onClick={() => {
-                                        selectFile(o).then()
-                                    }}
-                                    className="list-group-item list-group-item-action"
-                            >
-                                {o.name}
-                            </button>
-                        ))}
+                        <DisplayFolders onClick={selectFile} folders={folders}/>
                     </div>
                 )}
             </aside>

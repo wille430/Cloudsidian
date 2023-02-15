@@ -1,7 +1,7 @@
 import React, {ChangeEvent, MutableRefObject, useCallback, useEffect, useRef, useState} from "react"
 import {useObsidianContext} from "../context/ObsidianContext";
-import {CurrentFile} from "../services/FileEditor";
 import {useFileParam} from "./useFileParam";
+import {CurrentFile} from "../services/FileEditor";
 
 export const useEditor = (ref: MutableRefObject<HTMLTextAreaElement | null>) => {
 
@@ -24,28 +24,23 @@ export const useEditor = (ref: MutableRefObject<HTMLTextAreaElement | null>) => 
     } = useObsidianContext()
 
     const initEditor = () => {
-        setIsLoading(true)
+        setCurrentFile(fileEditor.getCurrentFile())
         fileEditor.getHtml().then(setEditorHtml)
-        fileEditor.getCurrentFile().then(file => {
-            setCurrentFile(file)
-            setEditorMarkdown(file?.content ?? null)
-            setIsLoading(false)
-        })
+        setEditorMarkdown(fileEditor.getCurrentFile()?.content ?? null)
     }
 
     const onEditorChange = (text: string) => {
         setEditorMarkdown(text)
         fileEditor.setContent(text)
         fileEditor.getHtml().then(setEditorHtml)
-        fileEditor.getCurrentFile().then(file => {
-            setIsModified(text !== file?.originalContent)
-        })
+        setIsModified(text !== fileEditor.getCurrentFile()?.originalContent)
     }
 
     const saveCurrentChanges = async () => {
         if (isSaving) return
         setIsSaving(true)
-        await fileEditor.save()
+        await fileEditor
+            .save()
             .finally(() => {
                 setIsSaving(false)
             })
@@ -98,11 +93,11 @@ export const useEditor = (ref: MutableRefObject<HTMLTextAreaElement | null>) => 
 
     useEffect(() => {
         setIsLoading(true)
-        setCurrentFile(null)
         fileEditor
             .setCurrentFile(fileParam)
             .then(initEditor)
-            .catch(() => {
+            .catch((e) => {
+                console.error(e)
                 setFileParam(null)
             })
             .finally(() => {

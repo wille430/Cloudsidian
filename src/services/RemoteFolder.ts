@@ -1,9 +1,11 @@
 import {IImportService} from "../dropbox/DropboxImportService";
 import {StorageItem} from "./StorageItem";
+import {takeWhile} from "lodash";
 
 export interface RootFolder {
     name: string
     remoteUrl: string
+    children?: FileEntry[]
 }
 
 export interface FileEntry {
@@ -11,26 +13,24 @@ export interface FileEntry {
     isDir: boolean
     remotePath?: string
     content: string | null
+    children?: FileEntry[]
+    showChildren?: boolean
+    isLoading?: boolean
 }
 
 interface IRemoteFolder {
     /**
      * Get a list of files/folders by path
-     * @param relativePath - The path relative to the root folder
      */
-    getFiles(relativePath: string | null): Promise<FileEntry[] | null>
+    getFiles(path: string | null): Promise<FileEntry[] | null>
 
     getStringContents(file: FileEntry): Promise<string | null>
 
-    getLocalFileLink(filename: string): Promise<string | null>
+    getLocalFileLink(path: string | null): Promise<string | null>
 
     getRemoteFilePath(file: FileEntry): string | null
 
-    getFile(path: string): Promise<FileEntry | null>
-
-    getRootFolder(): RootFolder | null
-
-    setRootFolder(folder: RootFolder | null): void
+    getFile(path: string | null): Promise<FileEntry | null>
 
     saveFile(file: FileEntry): Promise<boolean>
 
@@ -42,7 +42,6 @@ interface IRemoteFolder {
 }
 
 export class RemoteFolder implements IRemoteFolder {
-
     private static ENTRIES_STORE_KEY = "file-explorer-entries"
     private static URL_STORE_KEY = "remote-folder-url"
 
@@ -59,13 +58,59 @@ export class RemoteFolder implements IRemoteFolder {
     }
 
     public async getFile(path: string): Promise<FileEntry | null> {
+        const pathSegments = this.getPathSegments(path)
         const folderContents = await this.getFolderContents()
-        return folderContents?.find(o => o.remotePath === path) ?? null
+        return this.getFileHelper(pathSegments, folderContents)
     }
 
-    public async getFiles(relativePath: string | null = null): Promise<FileEntry[] | null> {
-        if (relativePath != null) throw new Error("Getting nested files is not implemented yet")
-        return this.getFolderContents()
+    private async getFileHelper(segments: string[], folderContents: FileEntry[]): Promise<FileEntry | null> {
+        if (segments.length === 0) throw new Error("Could not find file")
+
+        const fileName = segments.shift()
+        const file = folderContents.find(o => o.name.toUpperCase() === fileName?.toUpperCase())
+        if (segments.length === 0 || file == null) return file ?? null
+
+        if (!file.isDir) throw new Error(`${file.name} is not a directory`)
+        return this.getFileHelper(segments, file.children ?? [])
+    }
+
+    public async setFile(path: string, file: FileEntry): Promise<void> {
+        const folderContents = await this.getFolderContents()
+        const segments = this.getPathSegments(path)
+        await this.setFileHelper(segments, folderContents, file)
+        this.setFolderContents([...folderContents])
+    }
+
+    private async setFileHelper(segments: string[], folderContents: FileEntry[], newFile: FileEntry): Promise<void> {
+        if (segments.length === 0) throw new Error("Could not find file")
+
+        const fileIndex = folderContents.findIndex(o => o.name.toUpperCase() === newFile.name.toUpperCase())
+        if (segments.length === 0 || fileIndex !== -1) {
+            folderContents[fileIndex] = newFile
+            return
+        }
+        const fileName = segments.shift()
+        const next = folderContents.find(o => o.name.toUpperCase() === fileName!.toUpperCase())
+
+        return this.setFileHelper(segments, next?.children ?? [], newFile)
+    }
+
+    public async getFiles(path: string | null = null): Promise<FileEntry[] | null> {
+        if (path == null) {
+            return this.getFolderContents()
+        }
+
+        const folder = await this.getFile(path)
+        if (!folder?.isDir) throw new Error(`${path} is not a directory`)
+
+        if (folder.children == null) {
+            folder.children = await this.getRemoteFolderContents(path) ?? []
+
+            if (folder.remotePath != null) {
+                await this.setFile(folder.remotePath, folder)
+            }
+        }
+        return folder.children
     }
 
     public async getLocalFileLink(filename: string): Promise<string | null> {
@@ -110,13 +155,17 @@ export class RemoteFolder implements IRemoteFolder {
         this.folderContents.set(content)
     }
 
-    private async getRemoteFolderContents() {
+    private async getRemoteFolderContents(path: string | null = null): Promise<FileEntry[]> {
+        if (path) {
+            return this.importService.fetchFolderWithPath(path)
+        }
+
         const rootFolder = this.getRootFolder()
         if (rootFolder == null) {
             throw new Error("Remote folder url is not set. Cannot fetch files.")
         }
 
-        return this.importService.fetchFolder(rootFolder.remoteUrl)
+        return this.importService.fetchFolderWithUrl(rootFolder.remoteUrl)
     }
 
     public getRootFolder(): RootFolder | null {
@@ -132,18 +181,21 @@ export class RemoteFolder implements IRemoteFolder {
     public async saveFile(file: FileEntry): Promise<boolean> {
         try {
             await this.importService.saveFile(file)
-            let files = await this.getFolderContents()
-            files = files.map(o => {
-                if (o.remotePath === file.remotePath) {
-                    o.content = file.content
-                }
-                return o
-            })
-            await this.setFolderContents(files)
+            if (file.remotePath != null) {
+                await this.setFile(file.remotePath, file)
+            }
             return true
         } catch (e) {
             console.error(e)
             return false
         }
+    }
+
+    private getPathSegments(path: string) {
+        const rootFolder = this.getRootFolder()
+        return takeWhile(path.split("/").slice(1).reverse(), (o) => {
+            if (rootFolder?.name == null) return true
+            return o.toUpperCase() !== rootFolder.name.toUpperCase()
+        }).reverse()
     }
 }

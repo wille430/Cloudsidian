@@ -20,7 +20,7 @@ $colors-extended: (
 );
 $theme-colors: map-merge($theme-colors, $colors-extended);
 
-$font-sizes-extended : (
+$font-sizes-extended: (
         "details": $font-size-base * 0.9
 );
 $font-sizes: map-merge($font-sizes, $font-sizes-extended);
@@ -117,6 +117,14 @@ $editor-h6-color: #859679;
   margin-right: $spacer * 0.5;
 }
 
+button i {
+  margin-right: $spacer * 0.5;
+}
+
 .row {
   margin-right: 0 !important;
+}
+
+.ml-2 {
+  margin-left: 0.5rem;
 }

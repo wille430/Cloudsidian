@@ -2,13 +2,16 @@ import {FileEntry, RemoteFolder, RootFolder} from "./RemoteFolder";
 
 export class FileExplorer {
     private readonly remoteFolder: RemoteFolder
-
     constructor(remoteFolder: RemoteFolder) {
         this.remoteFolder = remoteFolder
     }
 
-    public async listDirectory(): Promise<FileEntry[] | null> {
-        return this.remoteFolder.getFiles()
+    public async listDirectory(folder: FileEntry | null = null): Promise<FileEntry[]> {
+        if (folder == null) {
+            return await this.remoteFolder.getFiles() ?? []
+        } else {
+            return await this.remoteFolder.getFiles(folder.remotePath) ?? []
+        }
     }
 
     public getRootFolder() {
