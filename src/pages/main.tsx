@@ -84,7 +84,7 @@ const HomepageBase = () => {
                     </div>
                 )}
             </aside>
-            <section className="flex-grow-1 bg-dark text-light overflow-scroll">
+            <section className="flex-grow-1 bg-dark text-light overflow-scroll min-vh-100 d-flex flex-column">
                 <header className="row px-2 py-1 bg-black bg-opacity-10">
                     <div className="col-1"/>
 
@@ -110,7 +110,7 @@ const HomepageBase = () => {
                         )}
                     </div>
                 </header>
-                <div className="editor-container row mx-auto gap-4">
+                <div className="editor-container row mx-auto gap-4 flex-grow-1">
                     {isEditorLoading ? (
                         <div className="center">
                             <div className="spinner-border"/>
