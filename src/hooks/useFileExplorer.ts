@@ -18,7 +18,7 @@ export const useFileExplorer = () => {
         updateFolderView().then()
     }
 
-    const updateFolderView = async () => {
+    const updateFolderView = async (): Promise<void> => {
         setIsLoading(true)
 
         const rootFolder = remoteFolder.getRootFolder()
@@ -26,19 +26,24 @@ export const useFileExplorer = () => {
         if (rootFolder == null) {
             setFolders(null)
             setIsLoading(false)
-            return
+        } else {
+            const newFolders = await remoteFolder
+                .getFiles()
+                .finally(() => setIsLoading(false))
+            // Creating a new reference is necessary for making react update correctly.
+            // More specifically, when importing a new folder, React wouldn't rerender when folder contents
+            // are loaded in. However, after reloading the window it worked as intended.
+            // Probably need refactoring in the future due to performance concerns?
+            setFolders([...newFolders ?? []])
         }
 
-        await remoteFolder.getFiles()
-            .then(setFolders)
-            .finally(() => setIsLoading(false))
     }
 
     const removeRemoteFolder = async () => {
         if (window.confirm("Are you sure you want to unlink this folder?")) {
             setIsLoading(true)
 
-            await remoteFolder.setRootFolder(null)
+            remoteFolder.setRootFolder(null)
 
             setRootFolder(null)
             setFolders(null)

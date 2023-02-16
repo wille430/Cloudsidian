@@ -1,3 +1,4 @@
+//noinspection CssUnknownTarget
 @import url('https://fonts.googleapis.com/css2?family=Fira+Mono&family=Inter:wght@300;400;500&display=swap');
 
 $primary: #393939;
@@ -6,9 +7,9 @@ $border-radius: .375rem;
 $border-radius-sm: .225rem;
 $border-radius-lg: .275rem;
 
-@import "~bootstrap/scss/functions";
-@import "~bootstrap/scss/variables";
-@import "~bootstrap/scss/mixins";
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/mixins";
 
 $spacers-extended: (
         6: $spacer * 6
@@ -25,7 +26,7 @@ $font-sizes-extended: (
 );
 $font-sizes: map-merge($font-sizes, $font-sizes-extended);
 
-@import "~bootstrap/scss/bootstrap";
+@import "bootstrap/scss/bootstrap";
 
 body {
   margin: 0;
