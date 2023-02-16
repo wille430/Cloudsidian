@@ -1,5 +1,5 @@
 import React from "react";
-import {FileEntry} from "../services/RemoteFolder";
+import {FileEntry} from "../models/FileEntry";
 
 interface DisplayFolderProps {
     folders?: FileEntry[] | null

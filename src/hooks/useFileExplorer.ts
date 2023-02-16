@@ -1,15 +1,18 @@
 import {useEffect, useState} from "react";
-import {FileEntry, RootFolder} from "../services/RemoteFolder";
+import {RemoteFolder} from "../services/RemoteFolder";
 import {useFileParam} from "./useFileParam";
-import {useObsidianContext} from "../context/ObsidianContext";
+import {useEditorContext} from "../context/EditorContext";
+import {FileEntry} from "../models/FileEntry";
+import {RootFolder} from "../models/RootFolder";
 
-export const useFileExplorer = () => {
+export const useFileExplorer = (remoteFolder: RemoteFolder) => {
     const [folders, setFolders] = useState<FileEntry[] | null>(null)
     const [rootFolder, setRootFolder] = useState<RootFolder | null>(null)
     const [isLoading, setIsLoading] = useState(false)
+    const [showSideBar, setShowSideBar] = useState(false)
 
-    const {fileEditor, remoteFolder} = useObsidianContext()
     const {setFileParam} = useFileParam()
+    const {currentFile} = useEditorContext()
 
     const importFolder = (folder: RootFolder) => {
         setRootFolder(folder)
@@ -82,7 +85,6 @@ export const useFileExplorer = () => {
      * @param file - {@link FileEntry}
      */
     const selectFile = async (file: FileEntry): Promise<boolean> => {
-        const currentFile = await fileEditor.getCurrentFile()
         if (file.isDir) {
             return openFolder(file)
                 .then(() => true)
@@ -94,7 +96,7 @@ export const useFileExplorer = () => {
             return false
         }
 
-        const link = await remoteFolder.getRemoteFilePath(file)
+        const link = remoteFolder.getRemoteFilePath(file)
         setFileParam(link ?? null)
 
         return true
@@ -109,10 +111,12 @@ export const useFileExplorer = () => {
         folders,
         rootFolder,
         isLoading,
+        showSideBar,
         removeRemoteFolder,
         reload,
         selectFile,
         importFolder,
-        openFolder
+        openFolder,
+        setShowSideBar
     }
 }

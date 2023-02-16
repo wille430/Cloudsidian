@@ -1,21 +1,8 @@
 import {IImportService} from "../dropbox/DropboxImportService";
 import {StorageItem} from "./StorageItem";
 import takeWhile from "lodash/takeWhile";
-
-export interface RootFolder {
-    name: string
-    remoteUrl: string
-    children?: FileEntry[]
-}
-
-export interface FileEntry {
-    name: string
-    isDir: boolean
-    remotePath?: string
-    content: string | null
-    children?: FileEntry[]
-    showChildren?: boolean
-}
+import {FileEntry} from "../models/FileEntry";
+import {RootFolder} from "../models/RootFolder";
 
 interface IRemoteFolder {
     /**

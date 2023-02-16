@@ -1,5 +1,5 @@
 import {Dropbox, files} from "dropbox";
-import {FileEntry} from "../services/RemoteFolder";
+import {FileEntry} from "../models/FileEntry";
 
 export interface IImportService {
     fetchFolderWithUrl(url: string): Promise<FileEntry[]>

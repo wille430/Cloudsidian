@@ -1,53 +1,58 @@
-import React, {ChangeEvent, MutableRefObject, useCallback, useEffect, useRef, useState} from "react"
-import {useObsidianContext} from "../context/ObsidianContext";
+import React, {ChangeEvent, useCallback, useEffect, useMemo, useRef, useState} from "react"
 import {useFileParam} from "./useFileParam";
-import {CurrentFile} from "../services/FileEditor";
+import {IMarkdownParser} from "../services/ObsidianParser";
+import {RemoteFolder} from "../services/RemoteFolder";
+import {CurrentFile} from "../models/CurrentFile";
 
-export const useEditor = (ref: MutableRefObject<HTMLTextAreaElement | null>) => {
+export const useEditor = (markdownParser: IMarkdownParser, remoteFolder: RemoteFolder) => {
 
     const changesArray = useRef<string[]>([])
     const historySize = 50
 
+    const {fileParam, setFileParam} = useFileParam()
+
     const [isSaving, setIsSaving] = useState(false)
     const [isModified, setIsModified] = useState(false)
     const [currentFile, setCurrentFile] = useState<CurrentFile | null>()
-    const [errorMessage, setErrorMessage] = useState<string | null>()
+    const [errorMessage] = useState<string | null>()
+    const isLoading = useMemo(() =>
+            currentFile == null && errorMessage == null && fileParam,
+        [currentFile, errorMessage, fileParam])
 
     const [editorHtml, setEditorHtml] = useState<string | null>()
-    const [editorMarkdown, setEditorMarkdown] = useState<string | null>()
 
-    const {fileParam, setFileParam} = useFileParam()
+    const textAreaRef = useRef<HTMLTextAreaElement | null>(null)
 
-    const {fileEditor} = useObsidianContext()
-
-    const initEditor = () => {
-        setCurrentFile(fileEditor.getCurrentFile())
-        fileEditor.getHtml().then(setEditorHtml)
-        setEditorMarkdown(fileEditor.getCurrentFile()?.content ?? null)
+    const loadHtml = () => {
+        return markdownParser.parse(currentFile?.content ?? "").then(setEditorHtml)
     }
 
-    const onEditorChange = (text: string) => {
-        setEditorMarkdown(text)
-        fileEditor.setContent(text)
-        fileEditor.getHtml().then(setEditorHtml)
-        setIsModified(text !== fileEditor.getCurrentFile()?.originalContent)
+    const onEditorChange = async (text: string) => {
+        setCurrentFile(prev => ({
+            ...prev!,
+            content: text
+        }))
+        await loadHtml()
+        setIsModified(text !== currentFile?.originalContent)
     }
 
     const saveCurrentChanges = async () => {
-        if (isSaving) return
+        if (isSaving || currentFile == null) return
         setIsSaving(true)
-        await fileEditor
-            .save()
+
+        await remoteFolder
+            .saveFile(currentFile)
             .finally(() => {
                 setIsSaving(false)
             })
+
         setIsModified(false)
     }
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (ref.current == null) return
+        if (e.currentTarget == null) return
 
-        const textArea = ref.current
+        const textArea = e.currentTarget
         if (e.key === "Tab") {
             e.preventDefault()
             const val = textArea.value
@@ -81,29 +86,47 @@ export const useEditor = (ref: MutableRefObject<HTMLTextAreaElement | null>) => 
     }, [])
 
     const setHeight = useCallback(() => {
-        if (ref.current) {
+        if (textAreaRef.current) {
             // @ts-ignore
-            ref.current.style.height = 0
-            ref.current.style.height = ref.current.scrollHeight + 'px';
+            textAreaRef.current.style.height = 0
+            textAreaRef.current.style.height = textAreaRef.current.scrollHeight + 'px';
         }
-    }, [ref])
+    }, [textAreaRef])
+
+    const setCurrentFileFromParam = async () => {
+        if (fileParam == null) {
+            setCurrentFile(null)
+            return
+        }
+
+        const file = await remoteFolder.getFile(fileParam)
+
+        if (file == null) {
+            setCurrentFile(null)
+            setFileParam(null)
+            return
+        }
+
+        if (file.content == null) {
+            await remoteFolder.getStringContents(file)
+        }
+
+        setCurrentFile({
+            ...file,
+            modified: false,
+            originalContent: file?.content ?? null
+        })
+    }
 
     useEffect(() => {
-        fileEditor
-            .setCurrentFile(fileParam)
-            .then(initEditor)
-            .catch((e) => {
-                console.error(e)
-                setErrorMessage(e)
-                setFileParam(null)
-            })
+        setCurrentFile(null)
+        setCurrentFileFromParam().then()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [fileParam])
 
     useEffect(() => {
-        initEditor()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+        loadHtml().then()
+    }, [currentFile?.content])
 
     useEffect(() => {
         setHeight()
@@ -117,9 +140,10 @@ export const useEditor = (ref: MutableRefObject<HTMLTextAreaElement | null>) => 
         saveCurrentChanges,
         isModified,
         isSaving,
-        isLoading: currentFile == null && errorMessage == null && fileParam,
+        isLoading,
         editorHtml,
-        editorMarkdown,
-        currentFile
+        editorMarkdown: currentFile?.content,
+        currentFile,
+        textAreaRef
     }
 }
