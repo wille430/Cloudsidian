@@ -13,6 +13,7 @@ export const useFileExplorer = () => {
 
     const importFolder = (folder: RootFolder) => {
         setRootFolder(folder)
+        remoteFolder.setRootFolder(folder)
         setFolders(null)
         updateFolderView().then()
     }
