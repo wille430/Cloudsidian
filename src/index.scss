@@ -221,7 +221,7 @@ $editor-h6-color: #859679;
 
 .floating-action-button {
   @extend .btn;
-  position: absolute;
+  position: fixed;
   bottom: $spacer;
   right: $spacer;
   z-index: 100;
