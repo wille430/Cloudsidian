@@ -47,7 +47,9 @@ const HomepageBase = () => {
         <main className="d-flex vh-100 overflow-hidden">
             <button
                 className={clsx("floating-action-button btn-primary btn-lg d-lg-none", !showSideBar && "visually-hidden")}
-                onClick={() => setShowSideBar(false)}>
+                onClick={() => setShowSideBar(false)}
+                aria-label="Close file explorer"
+            >
                 <i className="fa-solid fa-close"></i>
             </button>
 
@@ -57,11 +59,13 @@ const HomepageBase = () => {
                         className={clsx("btn-group btn-group-sm d-flex mb-4", rootFolder == null && "visually-hidden")}
                     >
                         <button className="btn btn-primary" onClick={signOut}>Sign Out</button>
-                        <button className="btn btn-outline-secondary" onClick={reload} disabled={isLoading}>
+                        <button className="btn btn-outline-secondary" onClick={reload} disabled={isLoading}
+                                aria-label="Reload folder">
                             <i className="fa-solid fa-rotate-right"></i>
                         </button>
                         <button className="btn btn-outline-danger"
-                                onClick={removeRemoteFolder}>
+                                onClick={removeRemoteFolder}
+                                aria-label="Close folder">
                             <i className="fa-solid fa-trash"/>
                         </button>
                     </div>
@@ -100,7 +104,8 @@ const HomepageBase = () => {
                     <div className={clsx("col-auto d-flex flex-row-reverse", currentFile == null && "opacity-0")}>
                         {isModified ? (
                             <button className="btn btn-sm btn-dark" type="button" onClick={saveCurrentChanges}
-                                    disabled={isSaving || currentFile == null}>
+                                    disabled={isSaving || currentFile == null}
+                                    aria-label="Save current changes">
                             <span
                                 className={clsx("spinner-border spinner-border-sm mr-2", !isSaving && "visually-hidden")}
                                 role="status"
@@ -116,10 +121,12 @@ const HomepageBase = () => {
                     </div>
                 </header>
                 <div className="d-flex justify-content-between">
-                    <button className="toggle-sidebar-button" onClick={() => setShowSideBar(prev => !prev)}>
+                    <button className="toggle-sidebar-button" onClick={() => setShowSideBar(prev => !prev)}
+                            aria-label="Toggle file explorer">
                         <i className="fa-solid fa-bars"></i>
                     </button>
-                    <button className="toggle-preview-button" onClick={() => setShowPreview(prev => !prev)}>
+                    <button className="toggle-preview-button" onClick={() => setShowPreview(prev => !prev)}
+                            aria-label="Toggle preview/edit mode">
                         {showPreview ? (
                             <i className="fa-solid fa-pen-to-square"></i>
                         ) : (
@@ -139,7 +146,8 @@ const HomepageBase = () => {
                                   onInput={e => onEditorChange(e.currentTarget.value)}
                                   onChange={handleChange}
                                   onKeyDown={handleKeyDown}
-                                  ref={editorTextAreaRef}/>
+                                  ref={editorTextAreaRef}
+                                  aria-label="Edit file"/>
                             <div className="col-lg editor-preview">
                                 {ReactHtmlParser(editorHtml as any)}
                             </div>
