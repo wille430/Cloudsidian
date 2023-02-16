@@ -119,7 +119,7 @@ export const useEditor = (ref: MutableRefObject<HTMLTextAreaElement | null>) => 
         saveCurrentChanges,
         isModified,
         isSaving,
-        isLoading: currentFile == null && errorMessage == null,
+        isLoading: currentFile == null && errorMessage == null && fileParam,
         editorHtml,
         editorMarkdown,
         currentFile
