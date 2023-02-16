@@ -264,3 +264,35 @@ $editor-h6-color: #859679;
   @extend .btn;
   @extend .btn-primary;
 }
+
+.directory {
+  @extend .list-group-item;
+  @extend .list-group-item-action;
+  border: none;
+}
+
+$subdir-line-border-radius: 2px;
+.subdirs {
+  & > div:first-child:before {
+    border-radius: $subdir-line-border-radius $subdir-line-border-radius 0 0;
+  }
+
+  & > div:last-child:before {
+    border-radius: 0 0 $subdir-line-border-radius $subdir-line-border-radius;
+    height: 120%;
+  }
+
+  & > div:only-child:before {
+    border-radius: $subdir-line-border-radius;
+  }
+
+  & > div:before {
+    content: '';
+    position: absolute;
+    border-left: 3px solid $primary;
+    left: -0.20rem;
+    top: -1.5rem;
+    z-index: 2;
+    height: 100%;
+  }
+}

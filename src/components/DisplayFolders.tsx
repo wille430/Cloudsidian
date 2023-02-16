@@ -1,5 +1,7 @@
 import React from "react";
 import {FileEntry} from "../models/FileEntry";
+import {useEditorContext} from "../context/EditorContext";
+import clsx from "clsx";
 
 interface DisplayFolderProps {
     folders?: FileEntry[] | null
@@ -7,12 +9,20 @@ interface DisplayFolderProps {
 }
 
 export const DisplayFolders = ({folders, onClick}: DisplayFolderProps) => {
+
+    const {
+        currentFile
+    } = useEditorContext()
+    const isSelected = (o: FileEntry) => {
+        return o.remotePath == currentFile?.remotePath
+    }
+
     return <>
         {folders?.map(o => {
             return (
-                <div key={o.name}>
+                <div key={o.name} className="position-relative">
                     <button onClick={() => onClick(o)}
-                            className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                            className={clsx("directory d-flex justify-content-between align-items-center", isSelected(o) && "bg-dark bg-opacity-10")}
                     >
                         <div>
                             {o.isDir && (
@@ -32,7 +42,7 @@ export const DisplayFolders = ({folders, onClick}: DisplayFolderProps) => {
                         )}
                     </button>
                     {o.showChildren === true && (
-                        <div className="list-group ml-2">
+                        <div className="list-group ml-2 subdirs">
                             <DisplayFolders onClick={onClick} folders={o.children}/>
                         </div>
                     )}
