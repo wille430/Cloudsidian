@@ -11,8 +11,7 @@ export const useEditor = (ref: MutableRefObject<HTMLTextAreaElement | null>) => 
     const [isSaving, setIsSaving] = useState(false)
     const [isModified, setIsModified] = useState(false)
     const [currentFile, setCurrentFile] = useState<CurrentFile | null>()
-
-    const [isLoading, setIsLoading] = useState(false)
+    const [errorMessage, setErrorMessage] = useState<string | null>()
 
     const [editorHtml, setEditorHtml] = useState<string | null>()
     const [editorMarkdown, setEditorMarkdown] = useState<string | null>()
@@ -92,16 +91,13 @@ export const useEditor = (ref: MutableRefObject<HTMLTextAreaElement | null>) => 
     }, [ref])
 
     useEffect(() => {
-        setIsLoading(true)
         fileEditor
             .setCurrentFile(fileParam)
             .then(initEditor)
             .catch((e) => {
                 console.error(e)
+                setErrorMessage(e)
                 setFileParam(null)
-            })
-            .finally(() => {
-                setIsLoading(false)
             })
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [fileParam])
@@ -123,7 +119,7 @@ export const useEditor = (ref: MutableRefObject<HTMLTextAreaElement | null>) => 
         saveCurrentChanges,
         isModified,
         isSaving,
-        isLoading,
+        isLoading: currentFile == null && errorMessage == null,
         editorHtml,
         editorMarkdown,
         currentFile
