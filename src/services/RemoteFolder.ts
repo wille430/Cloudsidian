@@ -15,7 +15,6 @@ export interface FileEntry {
     content: string | null
     children?: FileEntry[]
     showChildren?: boolean
-    isLoading?: boolean
 }
 
 interface IRemoteFolder {
@@ -78,7 +77,7 @@ export class RemoteFolder implements IRemoteFolder {
         const folderContents = await this.getFolderContents()
         const segments = this.getPathSegments(path)
         await this.setFileHelper(segments, folderContents, file)
-        this.setFolderContents([...folderContents])
+        this.setFolderContents(folderContents)
     }
 
     private async setFileHelper(segments: string[], folderContents: FileEntry[], newFile: FileEntry): Promise<void> {

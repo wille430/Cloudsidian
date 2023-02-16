@@ -8,19 +8,18 @@ export const useFileExplorer = () => {
     const [rootFolder, setRootFolder] = useState<RootFolder | null>(null)
     const [isLoading, setIsLoading] = useState(false)
 
-    const {fileEditor, fileExplorer} = useObsidianContext()
+    const {fileEditor, remoteFolder} = useObsidianContext()
     const {setFileParam} = useFileParam()
 
     const importFolder = (folder: RootFolder) => {
         setRootFolder(folder)
-        fileExplorer.setRemoteFolder(folder)
         updateFolderView().then()
     }
 
     const updateFolderView = async () => {
         setIsLoading(true)
 
-        const rootFolder = fileExplorer.getRootFolder()
+        const rootFolder = remoteFolder.getRootFolder()
         setRootFolder(rootFolder)
         if (rootFolder == null) {
             setFolders(null)
@@ -28,20 +27,21 @@ export const useFileExplorer = () => {
             return
         }
 
-        await fileExplorer
-            .listDirectory()
-            .then(res => setFolders([...res]))
+        await remoteFolder.getFiles()
+            .then(setFolders)
             .finally(() => setIsLoading(false))
     }
 
     const removeRemoteFolder = async () => {
         if (window.confirm("Are you sure you want to unlink this folder?")) {
             setIsLoading(true)
-            await fileExplorer.setRemoteFolder(null)
+
+            await remoteFolder.setRootFolder(null)
 
             setRootFolder(null)
             setFolders(null)
             setFileParam(null)
+
             setIsLoading(false)
         }
     }
@@ -49,7 +49,8 @@ export const useFileExplorer = () => {
     const reload = async () => {
         setIsLoading(true)
         try {
-            await fileExplorer.refetch()
+            await remoteFolder.sync()
+            await updateFolderView()
         } catch (e) {
             console.log(e)
         } finally {
@@ -58,17 +59,13 @@ export const useFileExplorer = () => {
     }
 
     const openFolder = async (folder: FileEntry) => {
-        folder.isLoading = true
         folder.showChildren = !folder.showChildren
 
+        await updateFolderView()
         if (folder.showChildren) {
-            await fileExplorer.listDirectory(folder)
-            await fileExplorer
-                .listDirectory()
-                .then(res => setFolders([...res]))
+            await remoteFolder.getFiles(folder.remotePath)
         }
 
-        folder.isLoading = false
         await updateFolderView()
     }
 
@@ -89,14 +86,14 @@ export const useFileExplorer = () => {
             return false
         }
 
-        const link = await fileExplorer.getRemoteFilePath(file)
+        const link = await remoteFolder.getRemoteFilePath(file)
         setFileParam(link ?? null)
 
         return true
     }
 
     useEffect(() => {
-        updateFolderView()
+        updateFolderView().then()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
@@ -104,7 +101,6 @@ export const useFileExplorer = () => {
         folders,
         rootFolder,
         isLoading,
-        fileExplorer,
         removeRemoteFolder,
         reload,
         selectFile,

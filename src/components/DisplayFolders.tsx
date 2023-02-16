@@ -1,5 +1,5 @@
+import React from "react";
 import {FileEntry} from "../services/RemoteFolder";
-import React  from "react";
 
 interface DisplayFolderProps {
     folders?: FileEntry[] | null
@@ -27,7 +27,7 @@ export const DisplayFolders = ({folders, onClick}: DisplayFolderProps) => {
                         </span>
                         </div>
 
-                        {o.isLoading && (
+                        {o.children == null && o.showChildren && (
                             <div className="spinner-border spinner-border-sm"/>
                         )}
                     </button>
