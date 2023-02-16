@@ -1,4 +1,3 @@
-import {useEffect} from "react";
 import {DropboxChooserResponse} from "../dropbox/interfaces/DropboxChooserResponse";
 
 interface DropboxChooserOptions {
@@ -13,15 +12,16 @@ interface DropboxChooserOptions {
 
 export const DropboxChooser = (options: DropboxChooserOptions) => {
 
-    useEffect(() => {
+    const handleClick = () => {
         // @ts-ignore
-        const button = (Dropbox as any).createChooseButton(options);
-        // @ts-ignore
-        const ele = document.getElementById("dropbox-chooser")
-        if (!ele?.hasChildNodes()) {
-            ele?.appendChild(button)
-        }
-    }, [options])
+        (Dropbox as any).choose(options)
+    }
 
-    return <div id="dropbox-chooser"></div>
+    return (
+        <button className="btn btn-xs btn-dropbox" onClick={handleClick}>
+            <i className="fa-brands fa-dropbox mr-2"/>
+            <span>Import folder</span>
+        </button>
+    )
+
 }

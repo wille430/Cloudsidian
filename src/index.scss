@@ -11,6 +11,11 @@ $border-radius-lg: .275rem;
 @import "bootstrap/scss/variables";
 @import "bootstrap/scss/mixins";
 
+$btn-padding-y-xs: $btn-padding-y-sm * 0.75;
+$btn-padding-x-xs: $btn-padding-x-sm * 0.75;
+$btn-font-size-xs: $btn-font-size-sm * 0.9;
+$btn-border-radius-xs: $btn-border-radius-sm;
+
 // Respond above.
 @mixin respond-above($breakpoint) {
 
@@ -253,4 +258,9 @@ $editor-h6-color: #859679;
     position: relative;
     display: block !important;
   }
+}
+
+.dropbox-dropin-btn, .dropbox-dropin-default {
+  @extend .btn;
+  @extend .btn-primary;
 }

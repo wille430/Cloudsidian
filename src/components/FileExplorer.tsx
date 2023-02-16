@@ -1,10 +1,10 @@
 import clsx from "clsx";
-import {DropboxChooser} from "./DropboxChooser";
 import {DisplayFolders} from "./DisplayFolders";
 import {useFileExplorerContext} from "../context/FileExplorerContext";
 import {useEffect} from "react";
 import {useDropboxContext} from "../context/DropboxContext";
 import {useEditorContext} from "../context/EditorContext";
+import {DropboxChooser} from "./DropboxChooser";
 
 export const FileExplorer = () => {
 
@@ -49,14 +49,16 @@ export const FileExplorer = () => {
                     </div>
 
                     <div className="d-flex justify-content-between">
-                        <h4 className="card-title">{rootFolder?.name}</h4>
+                        <h4 className="card-title flex-grow-1">{rootFolder?.name}</h4>
 
-                        <DropboxChooser success={(res) => {
-                            importFolder({
-                                name: res[0].name,
-                                remoteUrl: res[0].link
-                            })
-                        }} multiselect={false} folderselect={true}/>
+                        <div>
+                            <DropboxChooser success={(res) => {
+                                importFolder({
+                                    name: res[0].name,
+                                    remoteUrl: res[0].link
+                                })
+                            }} multiselect={false} folderselect={true}/>
+                        </div>
                     </div>
 
                 </div>
