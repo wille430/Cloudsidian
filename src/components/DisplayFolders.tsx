@@ -17,14 +17,14 @@ export const DisplayFolders = ({folders, onClick}: DisplayFolderProps) => {
                         <div>
                             {o.isDir && (
                                 o.showChildren ? (
-                                    <i className="fa-regular fa-folder"></i>
+                                    <i className="fa-regular fa-folder mr-2"></i>
                                 ) : (
-                                    <i className="fa-solid fa-folder"></i>
+                                    <i className="fa-solid fa-folder mr-2"></i>
                                 )
                             )}
                             <span>
-                            {o.name}
-                        </span>
+                                {o.name}
+                            </span>
                         </div>
 
                         {o.children == null && o.showChildren && (

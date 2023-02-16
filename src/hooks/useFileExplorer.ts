@@ -15,6 +15,7 @@ export const useFileExplorer = () => {
         setRootFolder(folder)
         remoteFolder.setRootFolder(folder)
         setFolders(null)
+        setFileParam(null)
         updateFolderView().then()
     }
 

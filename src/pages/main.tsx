@@ -2,7 +2,7 @@ import {useFileExplorer} from "../hooks/useFileExplorer";
 import {DropboxChooser} from "../components/DropboxChooser";
 import {useDropboxContext} from "../context/DropboxContext";
 import ReactHtmlParser from "react-html-parser"
-import React, {useRef} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {useEditor} from "../hooks/useEditor";
 import clsx from "clsx";
 import {withDropboxRemote} from "../hocs/withDropboxRemote";
@@ -36,9 +36,22 @@ const HomepageBase = () => {
         isLoading: isEditorLoading
     } = useEditor(editorTextAreaRef)
 
+    const [showPreview, setShowPreview] = useState(false)
+    const [showSideBar, setShowSideBar] = useState(false)
+
+    useEffect(() => {
+        setShowSideBar(false)
+    }, [currentFile])
+
     return (
         <main className="d-flex vh-100 overflow-hidden">
-            <aside className="max-w-sm overflow-scroll card">
+            <button
+                className={clsx("floating-action-button btn-primary btn-lg d-lg-none", !showSideBar && "visually-hidden")}
+                onClick={() => setShowSideBar(false)}>
+                <i className="fa-solid fa-close"></i>
+            </button>
+
+            <aside className="file-explorer" data-hidden={!showSideBar}>
                 <div className="sticky-top card-header bg-light">
                     <div
                         className={clsx("btn-group btn-group-sm d-flex mb-4", rootFolder == null && "visually-hidden")}
@@ -89,7 +102,7 @@ const HomepageBase = () => {
                             <button className="btn btn-sm btn-dark" type="button" onClick={saveCurrentChanges}
                                     disabled={isSaving || currentFile == null}>
                             <span
-                                className={clsx("spinner-border spinner-border-sm", !isSaving && "visually-hidden")}
+                                className={clsx("spinner-border spinner-border-sm mr-2", !isSaving && "visually-hidden")}
                                 role="status"
                             />
                                 <span>Save</span>
@@ -102,21 +115,32 @@ const HomepageBase = () => {
                         )}
                     </div>
                 </header>
-                <div className="editor-container row mx-auto gap-4 flex-grow-1">
+                <div className="d-flex justify-content-between">
+                    <button className="toggle-sidebar-button" onClick={() => setShowSideBar(prev => !prev)}>
+                        <i className="fa-solid fa-bars"></i>
+                    </button>
+                    <button className="toggle-preview-button" onClick={() => setShowPreview(prev => !prev)}>
+                        {showPreview ? (
+                            <i className="fa-solid fa-pen-to-square"></i>
+                        ) : (
+                            <i className="fa-solid fa-newspaper"></i>
+                        )}
+                    </button>
+                </div>
+                <div className="editor-container" data-preview={showPreview}>
                     {isEditorLoading ? (
                         <div className="center">
                             <div className="spinner-border"/>
                         </div>
                     ) : (
                         <>
-                            <div className="p-2 py-4 col">
-                        <textarea className="editor" spellCheck={false} value={editorMarkdown ?? ""}
+                        <textarea className="editor col-lg" spellCheck={false}
+                                  value={editorMarkdown ?? ""}
                                   onInput={e => onEditorChange(e.currentTarget.value)}
                                   onChange={handleChange}
                                   onKeyDown={handleKeyDown}
                                   ref={editorTextAreaRef}/>
-                            </div>
-                            <div className="p-2 py-4 col editor-preview">
+                            <div className="col-lg editor-preview">
                                 {ReactHtmlParser(editorHtml as any)}
                             </div>
                         </>
