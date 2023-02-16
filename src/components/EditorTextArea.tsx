@@ -7,7 +7,8 @@ export const EditorTextArea = () => {
         onEditorChange,
         handleChange,
         handleKeyDown,
-        textAreaRef
+        textAreaRef,
+        currentFile
     } = useEditorContext()
 
     return (
@@ -17,6 +18,7 @@ export const EditorTextArea = () => {
                   onChange={handleChange}
                   onKeyDown={handleKeyDown}
                   ref={textAreaRef}
+                  disabled={currentFile == null}
                   aria-label="Edit file"/>
     )
 }

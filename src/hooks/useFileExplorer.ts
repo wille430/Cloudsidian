@@ -69,15 +69,30 @@ export const useFileExplorer = (remoteFolder: RemoteFolder) => {
         }
     }
 
-    const openFolder = async (folder: FileEntry) => {
-        folder.showChildren = !folder.showChildren
-
-        await updateFolderView()
+    const toggleFolder = (folder: FileEntry) => {
         if (folder.showChildren) {
-            await remoteFolder.getFiles(folder.remotePath)
+            return closeFolder(folder)
+        } else {
+            return openFolder(folder)
         }
+    }
 
-        await updateFolderView()
+    const openFolder = async (folder: FileEntry, updateState = true) => {
+        folder.showChildren = true
+
+        // will only fetch folder content once
+        if (folder.children == null) {
+            await updateFolderView()
+            await remoteFolder
+                .getFiles(folder.remotePath)
+                .catch(e => console.log(e))
+        }
+        updateState && await updateFolderView()
+    }
+
+    const closeFolder = async (folder: FileEntry, updateState = true) => {
+        folder.showChildren = false
+        updateState && await updateFolderView()
     }
 
     /**
@@ -86,7 +101,7 @@ export const useFileExplorer = (remoteFolder: RemoteFolder) => {
      */
     const selectFile = async (file: FileEntry): Promise<boolean> => {
         if (file.isDir) {
-            return openFolder(file)
+            return toggleFolder(file)
                 .then(() => true)
                 .catch(() => false)
         }
@@ -100,6 +115,30 @@ export const useFileExplorer = (remoteFolder: RemoteFolder) => {
         setFileParam(link ?? null)
 
         return true
+    }
+
+    const expandAll = async () => {
+        await Promise.all(folders?.map(reduceFolders((folder) => openFolder(folder, false))) ?? [])
+        await updateFolderView()
+    }
+
+    const minimizeAll = async () => {
+        await Promise.all(folders?.map(reduceFolders((folder) => closeFolder(folder, false))) ?? [])
+        await updateFolderView()
+    }
+
+    const reduceFolders = (f: (folder: FileEntry) => any) => {
+        const g = async (folder: FileEntry): Promise<void> => {
+            if (!folder.isDir) return
+
+            await f(folder)
+
+            for (const child of folder.children ?? []) {
+                await g(child)
+            }
+        }
+
+        return g
     }
 
     useEffect(() => {
@@ -116,7 +155,9 @@ export const useFileExplorer = (remoteFolder: RemoteFolder) => {
         reload,
         selectFile,
         importFolder,
-        openFolder,
-        setShowSideBar
+        openFolder: toggleFolder,
+        setShowSideBar,
+        expandAll,
+        minimizeAll
     }
 }

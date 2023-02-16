@@ -20,6 +20,7 @@
     "@babel/core": "^7.20.12",
     "@babel/plugin-syntax-flow": "^7.18.6",
     "@babel/plugin-transform-react-jsx": "^7.20.13",
+    "@types/bootstrap": "^5.2.6",
     "@types/jest": "^27.5.2",
     "@types/lodash": "^4.14.191",
     "@types/marked": "^4.0.8",

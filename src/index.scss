@@ -296,3 +296,7 @@ $subdir-line-border-radius: 2px;
     height: 100%;
   }
 }
+
+.tooltip {
+  @extend .opacity-50;
+}
