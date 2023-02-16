@@ -1,5 +1,5 @@
 import {useDropboxAuth} from "../hooks/useDropboxAuth";
-import {flow} from "lodash";
+import flow from "lodash/flow";
 import {withDropboxAuth} from "./withDropboxAuth";
 import {ObsidianProvider} from "../context/ObsidianContext";
 import {ComponentType, useMemo} from "react";

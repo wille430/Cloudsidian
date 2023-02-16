@@ -1,5 +1,4 @@
 import {RemoteFolder} from "./RemoteFolder";
-import {marked} from "marked";
 import {asyncPipe} from "../utils";
 
 export interface IMarkdownParser {
@@ -16,6 +15,7 @@ export class ObsidianParser implements IMarkdownParser {
     }
 
     public async parse(md: string): Promise<string> {
+        const {marked} = await import("marked")
         // always bind this
         return asyncPipe(
             this.parseFileLinks.bind(this),

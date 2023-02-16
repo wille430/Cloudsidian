@@ -2,7 +2,7 @@ import {useFileExplorer} from "../hooks/useFileExplorer";
 import {DropboxChooser} from "../components/DropboxChooser";
 import {useDropboxContext} from "../context/DropboxContext";
 import ReactHtmlParser from "react-html-parser"
-import React, {useEffect, useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {useEditor} from "../hooks/useEditor";
 import clsx from "clsx";
 import {withDropboxRemote} from "../hocs/withDropboxRemote";

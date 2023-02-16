@@ -1,6 +1,6 @@
 import {IImportService} from "../dropbox/DropboxImportService";
 import {StorageItem} from "./StorageItem";
-import {takeWhile} from "lodash";
+import takeWhile from "lodash/takeWhile";
 
 export interface RootFolder {
     name: string

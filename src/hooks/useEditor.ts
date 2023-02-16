@@ -18,9 +18,7 @@ export const useEditor = (ref: MutableRefObject<HTMLTextAreaElement | null>) => 
 
     const {fileParam, setFileParam} = useFileParam()
 
-    const {
-        fileEditor
-    } = useObsidianContext()
+    const {fileEditor} = useObsidianContext()
 
     const initEditor = () => {
         setCurrentFile(fileEditor.getCurrentFile())
