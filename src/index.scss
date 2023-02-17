@@ -300,3 +300,7 @@ $subdir-line-border-radius: 2px;
 .tooltip {
   @extend .opacity-50;
 }
+
+.btn-xs {
+  @include button-size($btn-padding-y-xs, $btn-padding-x-xs, $btn-font-size-xs, $btn-border-radius-xs);
+}
